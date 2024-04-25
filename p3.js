@@ -9,17 +9,6 @@ const rl = readline.createInterface({
   output: process.stdout,
 })
 
-async function askName() {
-  return new Promise((resolve, reject) => {
-    rl.question(`Insert a domain name for VirtualHost: `, name => {
-      if (!name) {
-        throw new Error('No name was typed.')
-      }
-      resolve(name)
-    })
-  })
-}
-
 async function askZone() {
   return new Promise((resolve, reject) => {
     rl.question('You want to add the master zone or it\'s an existing one? [y/n] ', (answer) => {
@@ -38,7 +27,7 @@ async function main() {
   // }
 
   //await p1.main()
-  let name = await askName()
+  let name = await globals.ask(rl, 'Insert a domain name for VirtualHost: ', 'No name was typed.')
   rl.close()
 
   let httpdConf

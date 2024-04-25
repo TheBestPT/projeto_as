@@ -33,5 +33,15 @@ $ttl 38400
       }
     }
     return results
+  },
+  ask: async (rl, msg, noInputMsg) => {
+    return new Promise((resolve, reject) => {
+      rl.question(msg, data => {
+        if (!data) {
+          throw new Error(noInputMsg)
+        }
+        resolve(data)
+      })
+    })
   }
 }

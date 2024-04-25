@@ -9,55 +9,11 @@ const rl = readline.createInterface({
   output: process.stdout,
 })
 
-async function askName() {
-  return new Promise((resolve, reject) => {
-    rl.question(`Insert a domain name to add an A or MX record: `, name => {
-      if (!name) {
-        throw new Error('No name was typed.')
-      }
-      resolve(name)
-    })
-  })
-}
-
-async function askAMx() {
-  return new Promise((resolve, reject) => {
-    rl.question(`What type do you want do insert? A or MX?: `, recordType => {
-      if (!recordType) {
-        throw new Error('No record type was typed.')
-      }
-      resolve(recordType)
-    })
-  })
-}
-
-async function askRecord() {
-  return new Promise((resolve, reject) => {
-    rl.question(`Type the record: `, record => {
-      if (!record) {
-        throw new Error('No record was typed.')
-      }
-      resolve(record)
-    })
-  })
-}
-
-async function askIp() {
-  return new Promise((resolve, reject) => {
-    rl.question(`Type the ip for the record: `, ip => {
-      if (!ip) {
-        throw new Error('No ip was typed.')
-      }
-      resolve(ip)
-    })
-  })
-}
-
 async function main() {
-  let domainName = await askName()
-  let recordType = await askAMx()
-  let record = await askRecord()
-  let ip = await askIp()
+  let domainName = await globals.ask(rl, 'Insert a domain name to add an A or MX record: ', 'No name was typed.')
+  let recordType = await globals.ask(rl, 'What type do you want do insert? A or MX?: ', 'No record type was typed.')
+  let record = await globals.ask(rl, 'Type the record: ', 'No record was typed.')
+  let ip = await globals.ask(rl, 'Type the ip for the record: ', 'No ip was typed.')
   rl.close()
 
   let hostFile

@@ -8,31 +8,9 @@ const rl = readline.createInterface({
   output: process.stdout,
 })
 
-async function askName() {
-  return new Promise((resolve, reject) => {
-    rl.question(`Insert a domain name: `, name => {
-      if (!name) {
-        throw new Error('No name was typed.')
-      }
-      resolve(name)
-    })
-  })
-}
-
-function askOverride() {
-  return new Promise((resolve, reject) => {
-    rl.question('The domain already exists you to type again? [y/n] ', (answer) => {
-      if (!answer) {
-        throw new Error('No answer was typed.')
-      }
-      resolve(answer)
-    })
-  })
-}
-
 
 async function main() {
-  let name = await askName()
+  let name = await globals.ask(rl, 'Insert a domain name: ', 'No name was typed.')
   let named
   try {
     named = fs.readFileSync(globals.PATHS.zones, 'utf8')
@@ -40,13 +18,13 @@ async function main() {
     throw new Error('Couldn\'t read file: ' + globals.PATHS.zones)
   }
   while (named.includes(`"${name}"`)) {
-    let stop = await askOverride()
+    let stop = await globals.ask(rl, 'The domain already exists you to type again? [y/n] ', 'No answer was typed.')
 
     if (stop === 'n') {
       console.log('Program ended.')
       process.exit(0)
     }
-    name = await askName()
+    name = await globals.ask(rl, 'Insert a domain name: ', 'No name was typed.')
   }
   rl.close()
 
