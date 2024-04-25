@@ -53,7 +53,7 @@ async function main() {
   exec(`echo "${name}" > /home/${name}/index.html`)
   exec(`chmod 755 /home/${name} -R`)
 
-  httpdConf += `\n<VirtualHost ${globals.getLocalIp()['enp0s3']}:80>
+  httpdConf += `\n\n<VirtualHost ${globals.getLocalIp()['enp0s3']}:80>
   DocumentRoot "/home/${name}/"
   ServerName www.${name}
   ServerAlias ${name}
