@@ -61,7 +61,7 @@ async function main() {
     throw new Error('Couldn\'t write file: ' + globals.PATHS.zones)
   }
 
-  let hostContent = globals.defaultHost + `\n  IN  A  ${globals.getLocalIp()['enp0s3']}`
+  let hostContent = globals.defaultHost + `\n  IN  A  ${globals.getLocalIp()['enp0s3']}\nwww  IN  A  ${globals.getLocalIp()['enp0s3']}`
   try {
     fs.writeFileSync(globals.PATHS.hosts(name), hostContent)
   } catch (e) {
