@@ -4,6 +4,7 @@ module.exports = {
   PATHS: {
     zones: '/etc/named.conf',
     hosts: (name) => `/var/named/${name}.hosts`,
+    httpConf: '/etc/httpd/conf/httpd.conf',
   },
   defaultHost: `
 $ttl 38400

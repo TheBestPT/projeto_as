@@ -1,6 +1,7 @@
 const globals = require('./globals')
 const readline = require('readline')
 const fs = require('fs')
+const { exec } = require("child_process")
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -20,7 +21,7 @@ async function askName() {
 
 function askOverride() {
   return new Promise((resolve, reject) => {
-    rl.question('The domain already exists you want to override? [y/n]', (answer) => {
+    rl.question('The domain already exists you to type again? [y/n] ', (answer) => {
       if (!answer) {
         throw new Error('No answer was typed.')
       }
@@ -30,7 +31,7 @@ function askOverride() {
 }
 
 
-const app = async () => {
+async function main() {
   let name = await askName()
   let named
   try {
@@ -38,18 +39,20 @@ const app = async () => {
   } catch (e) {
     throw new Error('Couldn\'t read file: ' + globals.PATHS.zones)
   }
-  if (named.includes(`"${name}"`)) {
+  while (named.includes(`"${name}"`)) {
     let stop = await askOverride()
 
     if (stop === 'n') {
       console.log('Program ended.')
       process.exit(0)
     }
+    name = await askName()
   }
+  rl.close()
 
   named += `\nzone "${name}" IN {
     type master;
-    file "${globals.PATHS.hosts(name)}.hosts";
+    file "${globals.PATHS.hosts(name)}";
   };`
 
   try {
@@ -69,9 +72,14 @@ const app = async () => {
   console.log('Path to named config: ' + globals.PATHS.zones)
   console.log('Path to hosts file: ' + globals.PATHS.hosts(name))
 
-  rl.close()
+  exec(`systemctl restart named`)
+
+  console.log('Virtual host created with success')
 }
 
 
 
-app()
+main()
+
+
+module.exports = { main }
