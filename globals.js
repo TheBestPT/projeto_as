@@ -5,7 +5,8 @@ ask = async (rl, msg, noInputMsg) => {
   return new Promise((resolve, reject) => {
     rl.question(msg, data => {
       if (!data) {
-        throw new Error(noInputMsg)
+        console.log(noInputMsg)
+        process.exit(0)
       }
       resolve(data)
     })
@@ -45,11 +46,15 @@ $ttl 38400
 const PATHS = {
   zones: '/etc/named.conf',
   hosts: (name) => `/var/named/${name}.hosts`,
+  hostsDir: `/var/named/`,
   httpConf: '/etc/httpd/conf/httpd.conf',
 }
 
 const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
 const domainRegex = /^(?!:\/\/)([a-zA-Z0-9_-]+\.)+[a-zA-Z]{2,}$/
+const reverseZoneRegex = /\d+\.\d+\.\d+\.\d+\.in-addr\.arpa/
+
+
 
 module.exports = {
   PATHS,
@@ -57,7 +62,8 @@ module.exports = {
   getLocalIp,
   ask,
   ipRegex,
-  domainRegex
+  domainRegex,
+  reverseZoneRegex,
 }
 
 
