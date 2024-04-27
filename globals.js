@@ -1,17 +1,16 @@
-const { networkInterfaces } = require('os');
-
+const { networkInterfaces } = require("os");
 
 ask = async (rl, msg, noInputMsg) => {
   return new Promise((resolve, reject) => {
-    rl.question(msg, data => {
+    rl.question(msg, (data) => {
       if (!data) {
-        console.log(noInputMsg)
-        process.exit(0)
+        console.log(noInputMsg);
+        process.exit(0);
       }
-      resolve(data)
-    })
-  })
-}
+      resolve(data);
+    });
+  });
+};
 
 getLocalIp = () => {
   const nets = networkInterfaces();
@@ -20,7 +19,7 @@ getLocalIp = () => {
   for (const name of Object.keys(nets)) {
     for (const net of nets[name]) {
       // skip over non-ipv4 and internal (i.e. 127.0.0.1) addresses
-      if (net.family === 'IPv4' && !net.internal) {
+      if (net.family === "IPv4" && !net.internal) {
         if (!results[name]) {
           results[name] = [];
         }
@@ -29,8 +28,8 @@ getLocalIp = () => {
       }
     }
   }
-  return results
-}
+  return results;
+};
 
 const defaultHost = `
 $ttl 38400
@@ -41,20 +40,20 @@ $ttl 38400
             604800 ; expire
             38400 ; minimum
             )
-  IN	NS	dns.estig.pt.`
+  IN	NS	dns.estig.pt.`;
 
 const PATHS = {
-  zones: '/etc/named.conf',
+  zones: "/etc/named.conf",
   hosts: (name) => `/var/named/${name}.hosts`,
   hostsDir: `/var/named/`,
-  httpConf: '/etc/httpd/conf/httpd.conf',
-}
+  httpConf: "/etc/httpd/conf/httpd.conf",
+  home: "/home",
+};
 
-const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
-const domainRegex = /^(?!:\/\/)([a-zA-Z0-9_-]+\.)+[a-zA-Z]{2,}$/
-const reverseZoneRegex = /\d+\.\d+\.\d+\.\d+\.in-addr\.arpa/
-
-
+const ipRegex =
+  /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+const domainRegex = /^(?!:\/\/)([a-zA-Z0-9_-]+\.)+[a-zA-Z]{2,}$/;
+const reverseZoneRegex = /\d+\.\d+\.\d+\.\d+\.in-addr\.arpa/;
 
 module.exports = {
   PATHS,
@@ -64,6 +63,4 @@ module.exports = {
   ipRegex,
   domainRegex,
   reverseZoneRegex,
-}
-
-
+};

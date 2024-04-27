@@ -4,6 +4,7 @@ const {
   domainRegex,
   PATHS,
   reverseZoneRegex,
+  getLocalIp,
 } = require("./globals");
 const readline = require("readline");
 const fs = require("fs");
@@ -14,44 +15,51 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-async function deleteMasterZone() {
-  let files;
-  try {
-    files = fs.readdirSync(PATHS.hostsDir);
-  } catch (e) {
-    throw new Error("Cannot read directory: ", PATHS.hostsDir);
+async function deleteMasterZone(name = null) {
+  let fileChoose;
+  if (!name) {
+    let files;
+    try {
+      files = fs.readdirSync(PATHS.hostsDir);
+    } catch (e) {
+      throw new Error("Cannot read directory: ", PATHS.hostsDir);
+    }
+
+    const pattern = /\.hosts$/;
+    const reversePattern = /\.in-addr\.arpa\.hosts$/;
+    const nonReversePattern = /(?<!\.in-addr\.arpa)\.hosts$/;
+    const filteredZones = files.filter(
+      (file) =>
+        pattern.test(file) &&
+        nonReversePattern.test(file) &&
+        !reversePattern.test(file) &&
+        !file.includes("named") &&
+        file.includes("hosts")
+    );
+    let c = 0;
+    if (filteredZones.length === 0) {
+      console.log("No master zones to delete.");
+      await main();
+      return;
+    }
+    filteredZones.forEach((file) => {
+      console.log(`[${c++}] ${file}`);
+    });
+    let option = await ask(
+      rl,
+      "Type the number of what record delete: ",
+      "No option was typed"
+    );
+    rl.close();
+    fileChoose = filteredZones[parseInt(option)];
+  } else {
+    fileChoose = name;
   }
 
-  const pattern = /\.hosts$/;
-  const reversePattern = /\.in-addr\.arpa\.hosts$/;
-  const nonReversePattern = /(?<!\.in-addr\.arpa)\.hosts$/;
-  const filteredZones = files.filter(
-    (file) =>
-      pattern.test(file) &&
-      nonReversePattern.test(file) &&
-      !reversePattern.test(file) &&
-      !file.includes("named") &&
-      file.includes("hosts")
-  );
-  let c = 0;
-  if (filteredZones.length === 0) {
-    console.log("No master zones to delete.");
-    await main();
-    return;
-  }
-  filteredZones.forEach((file) => {
-    console.log(`[${c++}] ${file}`);
-  });
-  let option = await ask(
-    rl,
-    "Type the number of what record delete: ",
-    "No option was typed"
-  );
-  rl.close();
-  let fileChoose = filteredZones[parseInt(option)];
   try {
     fs.unlinkSync("/var/named/" + fileChoose);
   } catch (e) {
+    console.log(e)
     throw new Error("Cannot delete file: ", fileChoose);
   }
 
@@ -80,7 +88,66 @@ async function deleteMasterZone() {
   console.log(`Master zone ${domainName} was deleted with success.`);
 }
 
-async function deleteVirtualHost() {}
+async function deleteVirtualHost() {
+  let files;
+  try {
+    files = fs.readdirSync(PATHS.home);
+  } catch (e) {
+    throw new Error("Cannot read directory: ", PATHS.hostsDir);
+  }
+
+  let filteredZones = files.filter((file) => domainRegex.test(file));
+
+  if (filteredZones.length === 0) {
+    console.log("No master zones to delete.");
+    await main();
+    return;
+  }
+  let c = 0;
+  filteredZones.forEach((file) => {
+    console.log(`[${c++}] ${file}`);
+  });
+
+  let option = await ask(
+    rl,
+    "Type the number of what record delete: ",
+    "No option was typed"
+  );
+  rl.close();
+
+  let selectOption = filteredZones[parseInt(option)]
+  await deleteMasterZone(selectOption + '.hosts')
+  let httpConf 
+  try {
+    httpConf = fs.readFileSync(PATHS.httpConf, 'utf8')
+  } catch(e) {
+    throw new Error('Cannot read file: ', PATHS.httpConf)
+  }
+
+  httpConf = httpConf.replace(`<VirtualHost ${getLocalIp()["enp0s3"]}:80>
+  DocumentRoot "/home/${selectOption}/"
+  ServerName www.${selectOption}
+  ServerAlias ${selectOption}
+  <Directory "/home/${selectOption}">
+    Options Indexes FollowSymLinks
+    AllowOverride All
+    Order allow,deny
+    Allow from all
+    Require method GET POST OPTIONS
+  </Directory>
+  </VirtualHost>`, '')
+
+  try {
+    fs.writeFileSync(PATHS.httpConf, httpConf)
+  } catch(e) {
+    throw new Error('Cannot write file: ', PATHS.httpConf)
+  }
+
+  exec(`systemctl restart httpd`)
+  exec(`systemctl restart named`)
+
+  console.log('Virtual Host deleted with success.')
+}
 
 async function deleteReverseZone() {
   let files;
@@ -116,7 +183,6 @@ async function deleteReverseZone() {
     "No option was typed"
   );
   rl.close();
-  console.log(option);
   let fileChoose = filteredZones[parseInt(option)];
   try {
     fs.unlinkSync("/var/named/" + fileChoose);
@@ -134,7 +200,7 @@ async function deleteReverseZone() {
   let searchValue = `zone "${domainName}" IN {
     type master;
     file "${PATHS.hosts(domainName)}";
-    };`;
+    };`;  
 
   namedConf = namedConf.replace(searchValue, "");
 
