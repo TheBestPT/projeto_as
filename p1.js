@@ -46,13 +46,15 @@ async function main() {
     throw new Error('Couldn\'t write file: ' + globals.PATHS.hosts(name))
   }
 
+  exec(`systemctl restart named`)
+
   console.log('The master zone and it\'s hosts file were created.')
   console.log('Path to named config: ' + globals.PATHS.zones)
   console.log('Path to hosts file: ' + globals.PATHS.hosts(name))
 
-  exec(`systemctl restart named`)
+  
 
-  console.log('Virtual host created with success')
+  
 }
 
 

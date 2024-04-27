@@ -1,12 +1,37 @@
 const { networkInterfaces } = require('os');
 
-module.exports = {
-  PATHS: {
-    zones: '/etc/named.conf',
-    hosts: (name) => `/var/named/${name}.hosts`,
-    httpConf: '/etc/httpd/conf/httpd.conf',
-  },
-  defaultHost: `
+
+ask = async (rl, msg, noInputMsg) => {
+  return new Promise((resolve, reject) => {
+    rl.question(msg, data => {
+      if (!data) {
+        throw new Error(noInputMsg)
+      }
+      resolve(data)
+    })
+  })
+}
+
+getLocalIp = () => {
+  const nets = networkInterfaces();
+  const results = Object.create(null); // or just '{}', an empty object
+
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      // skip over non-ipv4 and internal (i.e. 127.0.0.1) addresses
+      if (net.family === 'IPv4' && !net.internal) {
+        if (!results[name]) {
+          results[name] = [];
+        }
+
+        results[name].push(net.address);
+      }
+    }
+  }
+  return results
+}
+
+const defaultHost = `
 $ttl 38400
 @	IN	SOA	dns.estig.pt. mail.as.com. (
             1165190726 ;serial
@@ -15,33 +40,24 @@ $ttl 38400
             604800 ; expire
             38400 ; minimum
             )
-  IN	NS	dns.estig.pt.`,
-  getLocalIp: () => {
-    const nets = networkInterfaces();
-    const results = Object.create(null); // or just '{}', an empty object
+  IN	NS	dns.estig.pt.`
 
-    for (const name of Object.keys(nets)) {
-      for (const net of nets[name]) {
-        // skip over non-ipv4 and internal (i.e. 127.0.0.1) addresses
-        if (net.family === 'IPv4' && !net.internal) {
-          if (!results[name]) {
-            results[name] = [];
-          }
-
-          results[name].push(net.address);
-        }
-      }
-    }
-    return results
-  },
-  ask: async (rl, msg, noInputMsg) => {
-    return new Promise((resolve, reject) => {
-      rl.question(msg, data => {
-        if (!data) {
-          throw new Error(noInputMsg)
-        }
-        resolve(data)
-      })
-    })
-  }
+const PATHS = {
+  zones: '/etc/named.conf',
+  hosts: (name) => `/var/named/${name}.hosts`,
+  httpConf: '/etc/httpd/conf/httpd.conf',
 }
+
+const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+const domainRegex = /^(?!:\/\/)([a-zA-Z0-9_-]+\.)+[a-zA-Z]{2,}$/
+
+module.exports = {
+  PATHS,
+  defaultHost,
+  getLocalIp,
+  ask,
+  ipRegex,
+  domainRegex
+}
+
+

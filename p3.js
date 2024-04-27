@@ -64,6 +64,8 @@ async function main() {
 
 
   exec(`systemctl restart httpd`)
+
+  console.log('Virtual host created with success')
 }
 
 main()
