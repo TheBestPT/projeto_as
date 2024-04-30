@@ -9,7 +9,7 @@ const rl = readline.createInterface({
 });
 
 async function main() {
-  console.log("Program to create reserve zones.");
+  console.log("Program to create reverse zones.");
   let ip = await ask(
     rl,
     "Insert an ip for the reverse zone: ",

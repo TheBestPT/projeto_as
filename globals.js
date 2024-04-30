@@ -48,6 +48,7 @@ const PATHS = {
   hostsDir: `/var/named/`,
   httpConf: "/etc/httpd/conf/httpd.conf",
   home: "/home",
+  nfsExport: '/etc/exports',
 };
 
 const ipRegex =
