@@ -49,7 +49,15 @@ const PATHS = {
   httpConf: "/etc/httpd/conf/httpd.conf",
   home: "/home",
   nfsExport: '/etc/exports',
+  smbConf: '/etc/samba/smb.conf'
 };
+
+const reserveDirSmb = [
+  '[global]',
+  '[homes]',
+  '[printers]',
+  '[print$]',
+]
 
 const ipRegex =
   /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
@@ -64,4 +72,5 @@ module.exports = {
   ipRegex,
   domainRegex,
   reverseZoneRegex,
+  reserveDirSmb
 };
