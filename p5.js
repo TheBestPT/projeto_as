@@ -115,6 +115,8 @@ ${lastDigit}  IN  PTR ${domainName}.`;
   exec(`systemctl restart named`);
 
   console.log("reverse zone added with success");
+  console.log(`Named conf: ${PATHS.zones}`);
+  console.log(`Reverse zone: ${PATHS.hosts(`${reverseIp}.in-addr.arpa`)}`);
 }
 
 console.log("Reverse zones Program.");

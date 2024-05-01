@@ -86,6 +86,7 @@ async function deleteMasterZone(name = null) {
   exec(`systemctl restart named`);
 
   console.log(`Master zone ${domainName} was deleted with success.`);
+  console.log(`Named conf: ${PATHS.zones}`);
 }
 
 async function deleteVirtualHost() {
@@ -150,6 +151,7 @@ async function deleteVirtualHost() {
   exec(`systemctl restart named`);
 
   console.log("Virtual Host deleted with success.");
+  console.log(`HTTP conf: ${PATHS.httpConf}`);
 }
 
 async function deleteReverseZone() {
@@ -201,8 +203,8 @@ async function deleteReverseZone() {
   }
   let domainName = fileChoose.replace(".hosts", "");
   let searchValue = `zone "${domainName}" IN {
-    type master;
-    file "${PATHS.hosts(domainName)}";
+      type master;
+      file "${PATHS.hosts(domainName)}";
     };`;
 
   namedConf = namedConf.replace(searchValue, "");
@@ -216,6 +218,7 @@ async function deleteReverseZone() {
   exec(`systemctl restart named`);
 
   console.log(`Reverse zone ${domainName} was deleted with success.`);
+  console.log(`Named conf: ${PATHS.zones}`);
 }
 
 async function main() {
