@@ -28,7 +28,7 @@ getLocalIp = () => {
       }
     }
   }
-  return results;
+  return results["enp0s3"];
 };
 
 const defaultHost = `

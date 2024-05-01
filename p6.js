@@ -59,7 +59,7 @@ async function deleteMasterZone(name = null) {
   try {
     fs.unlinkSync("/var/named/" + fileChoose);
   } catch (e) {
-    console.log(e)
+    console.log(e);
     throw new Error("Cannot delete file: ", fileChoose);
   }
 
@@ -115,16 +115,17 @@ async function deleteVirtualHost() {
   );
   rl.close();
 
-  let selectOption = filteredZones[parseInt(option)]
-  await deleteMasterZone(selectOption + '.hosts')
-  let httpConf 
+  let selectOption = filteredZones[parseInt(option)];
+  await deleteMasterZone(selectOption + ".hosts");
+  let httpConf;
   try {
-    httpConf = fs.readFileSync(PATHS.httpConf, 'utf8')
-  } catch(e) {
-    throw new Error('Cannot read file: ', PATHS.httpConf)
+    httpConf = fs.readFileSync(PATHS.httpConf, "utf8");
+  } catch (e) {
+    throw new Error("Cannot read file: ", PATHS.httpConf);
   }
 
-  httpConf = httpConf.replace(`<VirtualHost ${getLocalIp()["enp0s3"]}:80>
+  httpConf = httpConf.replace(
+    `<VirtualHost ${getLocalIp()["enp0s3"]}:80>
   DocumentRoot "/home/${selectOption}/"
   ServerName www.${selectOption}
   ServerAlias ${selectOption}
@@ -135,18 +136,20 @@ async function deleteVirtualHost() {
     Allow from all
     Require method GET POST OPTIONS
   </Directory>
-  </VirtualHost>`, '')
+  </VirtualHost>`,
+    ""
+  );
 
   try {
-    fs.writeFileSync(PATHS.httpConf, httpConf)
-  } catch(e) {
-    throw new Error('Cannot write file: ', PATHS.httpConf)
+    fs.writeFileSync(PATHS.httpConf, httpConf);
+  } catch (e) {
+    throw new Error("Cannot write file: ", PATHS.httpConf);
   }
 
-  exec(`systemctl restart httpd`)
-  exec(`systemctl restart named`)
+  exec(`systemctl restart httpd`);
+  exec(`systemctl restart named`);
 
-  console.log('Virtual Host deleted with success.')
+  console.log("Virtual Host deleted with success.");
 }
 
 async function deleteReverseZone() {
@@ -200,7 +203,7 @@ async function deleteReverseZone() {
   let searchValue = `zone "${domainName}" IN {
     type master;
     file "${PATHS.hosts(domainName)}";
-    };`;  
+    };`;
 
   namedConf = namedConf.replace(searchValue, "");
 

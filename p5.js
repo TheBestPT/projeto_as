@@ -9,25 +9,26 @@ const rl = readline.createInterface({
 });
 
 async function main() {
-  console.log("Program to create reverse zones.");
   let ip = await ask(
     rl,
     "Insert an ip for the reverse zone: ",
     "No ip was typed."
   );
+  if (!ipRegex.test(ip)) {
+    console.log("Invalid ip type again!");
+    await main();
+    return;
+  }
+
   let domainName = await ask(
     rl,
     "Insert a domain name for the reverse zone: ",
     "No domain was typed."
   );
-  //rl.close()
-
-  if (!ipRegex.test(ip)) {
-    throw new Error("Ip is invalid");
-  }
-
   if (!domainRegex.test(domainName)) {
-    throw new Error("Domain is invalid");
+    console.log("Domain is invalid, program will restart");
+    await main();
+    return;
   }
 
   let reverseIp = ip.split(".");
@@ -49,7 +50,6 @@ async function main() {
       file "/var/named/${reverseIp}.in-addr.arpa.hosts";
     };`;
 
-    //console.log(namedConf)
     try {
       fs.writeFileSync(PATHS.zones, namedConf);
     } catch (e) {
@@ -117,4 +117,5 @@ ${lastDigit}  IN  PTR ${domainName}.`;
   console.log("reverse zone added with success");
 }
 
+console.log("Reverse zones Program.");
 main();

@@ -1,4 +1,10 @@
-const globals = require("./globals");
+const {
+  domainRegex,
+  PATHS,
+  ask,
+  defaultHost,
+  getLocalIp,
+} = require("./globals");
 const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
@@ -9,19 +15,23 @@ const rl = readline.createInterface({
 });
 
 async function main() {
-  let name = await globals.ask(
-    rl,
-    "Insert a domain name: ",
-    "No name was typed."
-  );
+  let name = await ask(rl, "Insert a domain name: ", "No name was typed.");
+
+  if (!domainRegex.test(name)) {
+    console.log("Invalid domain name type again!");
+    await main();
+    return;
+  }
+
   let named;
   try {
-    named = fs.readFileSync(globals.PATHS.zones, "utf8");
+    named = fs.readFileSync(PATHS.zones, "utf8");
   } catch (e) {
-    throw new Error("Couldn't read file: " + globals.PATHS.zones);
+    throw new Error("Couldn't read file: " + PATHS.zones);
   }
+
   while (named.includes(`"${name}"`)) {
-    let stop = await globals.ask(
+    let stop = await ask(
       rl,
       "The domain already exists you to type again? [y/n] ",
       "No answer was typed."
@@ -31,43 +41,38 @@ async function main() {
       console.log("Program ended.");
       process.exit(0);
     }
-    name = await globals.ask(
-      rl,
-      "Insert a domain name: ",
-      "No name was typed."
-    );
+    name = await ask(rl, "Insert a domain name: ", "No name was typed.");
   }
+
   rl.close();
 
   named += `\nzone "${name}" IN {
     type master;
-    file "${globals.PATHS.hosts(name)}";
+    file "${PATHS.hosts(name)}";
   };`;
 
   try {
-    fs.writeFileSync(globals.PATHS.zones, named);
+    fs.writeFileSync(PATHS.zones, named);
   } catch (e) {
-    throw new Error("Couldn't write file: " + globals.PATHS.zones);
+    throw new Error("Couldn't write file: " + PATHS.zones);
   }
 
   let hostContent =
-    globals.defaultHost +
-    `\n  IN  A  ${globals.getLocalIp()["enp0s3"]}\nwww  IN  A  ${
-      globals.getLocalIp()["enp0s3"]
-    }`;
+    defaultHost + `\n  IN  A  ${getLocalIp()}\nwww  IN  A  ${getLocalIp()}`;
   try {
-    fs.writeFileSync(globals.PATHS.hosts(name), hostContent);
+    fs.writeFileSync(PATHS.hosts(name), hostContent);
   } catch (e) {
-    throw new Error("Couldn't write file: " + globals.PATHS.hosts(name));
+    throw new Error("Couldn't write file: " + PATHS.hosts(name));
   }
 
   exec(`systemctl restart named`);
 
   console.log("The master zone and it's hosts file were created.");
-  console.log("Path to named config: " + globals.PATHS.zones);
-  console.log("Path to hosts file: " + globals.PATHS.hosts(name));
+  console.log("Path to named config: " + PATHS.zones);
+  console.log("Path to hosts file: " + PATHS.hosts(name));
 }
 
+console.log('DNS Program')
 main();
 
 module.exports = { main };
