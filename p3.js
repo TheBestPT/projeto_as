@@ -3,12 +3,13 @@ const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+
 
 async function main() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
   let name = await ask(
     rl,
     "Insert a domain name for VirtualHost: ",
@@ -61,5 +62,7 @@ async function main() {
   console.log(`Path to the user created: /home/${name}`);
 }
 
-console.log('Virtual Hosts program')
-main();
+// console.log('Virtual Hosts program')
+// main();
+
+module.exports = { main }

@@ -10,12 +10,12 @@ const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+// const rl = readline.createInterface({
+//   input: process.stdin,
+//   output: process.stdout,
+// });
 
-async function createShare(pathEdit = null) {
+async function createShare(rl, pathEdit = null) {
   let path = await ask(
     rl,
     "Insert a path to the directory that you want share: ",
@@ -55,11 +55,13 @@ async function createShare(pathEdit = null) {
       read only = yes
       browsable = yes`;
   } else {
-    console.log(`\n[${
-      pathEdit.startsWith("/") ? pathEdit.substring(1) : pathEdit
-    }]\n  comment = SMB share /${pathEdit}\n  path = ${
-      !pathEdit.startsWith("/") ? "/" + pathEdit : pathEdit
-    }\n  read only = no\n  browsable = yes`);
+    console.log(
+      `\n[${
+        pathEdit.startsWith("/") ? pathEdit.substring(1) : pathEdit
+      }]\n  comment = SMB share /${pathEdit}\n  path = ${
+        !pathEdit.startsWith("/") ? "/" + pathEdit : pathEdit
+      }\n  read only = no\n  browsable = yes`
+    );
     smbConfig = smbConfig.replace(
       `\n[${
         pathEdit.startsWith("/") ? pathEdit.substring(1) : pathEdit
@@ -86,7 +88,7 @@ async function createShare(pathEdit = null) {
   console.log(`Smb conf: ${PATHS.smbConf}`);
 }
 
-async function editShare() {
+async function editShare(rl) {
   let smbConf;
   try {
     smbConf = fs.readFileSync(PATHS.smbConf, "utf8");
@@ -104,11 +106,11 @@ async function editShare() {
   let option = await ask(rl, "Choose one to edit: ", "No option was typed.");
   //rl.close();
   await createShare(
-    smbConf[parseInt(option)].substring(1, smbConf[parseInt(option)].length - 1)
+    rl, smbConf[parseInt(option)].substring(1, smbConf[parseInt(option)].length - 1)
   );
 }
 
-async function deleteShare() {
+async function deleteShare(rl) {
   let smbConf;
   try {
     smbConf = fs.readFileSync(PATHS.smbConf, "utf8");
@@ -124,14 +126,13 @@ async function deleteShare() {
   });
 
   let option = await ask(rl, "Choose one to delete: ", "No option was typed.");
-  rl.close()
+  rl.close();
 
-
-  let smbConfig
+  let smbConfig;
   try {
-    fs.readFileSync(PATHS.smbConf, 'utf8')
+    fs.readFileSync(PATHS.smbConf, "utf8");
   } catch (e) {
-    throw new Error('Cannot read file: ', PATHS.smbConf)
+    throw new Error("Cannot read file: ", PATHS.smbConf);
   }
 
   smbConfig = smbConfig.replace(
@@ -139,7 +140,8 @@ async function deleteShare() {
       pathEdit.startsWith("/") ? pathEdit.substring(1) : pathEdit
     }]\n  comment = SMB share /${pathEdit}\n  path = ${
       !pathEdit.startsWith("/") ? "/" + pathEdit : pathEdit
-    }\n  read only = no\n  browsable = yes`, ''
+    }\n  read only = no\n  browsable = yes`,
+    ""
   );
 
   try {
@@ -154,7 +156,7 @@ async function deleteShare() {
   console.log(`Smb conf: ${PATHS.smbConf}`);
 }
 
-async function disableShare() {
+async function disableShare(rl) {
   let confirm = await ask(
     rl,
     "Are you sure do disable shares? [y/n]: ",
@@ -171,6 +173,10 @@ async function disableShare() {
 }
 
 async function main() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
   let option = await ask(
     rl,
     "[1] Create a share\n[2] Edit a share\n[3] Delete a share\n[4] Disable shares\nType an option: ",
@@ -178,13 +184,13 @@ async function main() {
   );
   switch (option) {
     case "1":
-      await createShare();
+      await createShare(rl);
       break;
     case "2":
-      await editShare();
+      await editShare(rl);
       break;
     case "4":
-      await disableShare();
+      await disableShare(rl);
       break;
     default:
       await main();
@@ -192,5 +198,7 @@ async function main() {
   }
 }
 
-console.log("SMB Program");
-main();
+//console.log("SMB Program");
+//main();
+
+module.exports = { main };

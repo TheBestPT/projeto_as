@@ -3,12 +3,9 @@ const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
 
-async function createShare(update = null) {
+
+async function createShare(rl, update = null) {
   let path = await ask(
     rl,
     "Insert the path to the directory to be shared: ",
@@ -62,7 +59,7 @@ async function createShare(update = null) {
   }
 }
 
-async function disableShare() {
+async function disableShare(rl) {
   let confirm = await ask(
     rl,
     "Are you sure to disable share?[y/n] ",
@@ -78,7 +75,7 @@ async function disableShare() {
   }
 }
 
-async function updateShare() {
+async function updateShare(rl) {
   let nfsExport;
   try {
     nfsExport = fs.readFileSync(PATHS.nfsExport, "utf8");
@@ -99,10 +96,10 @@ async function updateShare() {
     "No option was typed"
   );
   //rl.close();
-  await createShare(options[parseInt(updateOption)])
+  await createShare(rl, options[parseInt(updateOption)])
 }
 
-async function deleteShare() {
+async function deleteShare(rl) {
   let nfsExport;
   try {
     nfsExport = fs.readFileSync(PATHS.nfsExport, "utf8");
@@ -150,6 +147,10 @@ async function deleteShare() {
 }
 
 async function main() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
   console.log("NFS PROGRAM");
   let witchMenu = await ask(
     rl,
@@ -158,16 +159,16 @@ async function main() {
   );
   switch (witchMenu) {
     case "1":
-      await createShare();
+      await createShare(rl);
       break;
     case "2":
-      await updateShare();
+      await updateShare(rl);
       break;
     case "3":
-      await deleteShare();
+      await deleteShare(rl);
       break;
     case "4":
-      await disableShare();
+      await disableShare(rl);
       break;
 
     default:
@@ -176,4 +177,7 @@ async function main() {
   }
 }
 
-main();
+// main();
+
+
+module.exports = { main }

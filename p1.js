@@ -9,12 +9,16 @@ const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+// const rl = readline.createInterface({
+//   input: process.stdin,
+//   output: process.stdout,
+// });
 
 async function main() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
   let name = await ask(rl, "Insert a domain name: ", "No name was typed.");
 
   if (!domainRegex.test(name)) {
@@ -72,7 +76,7 @@ async function main() {
   console.log("Path to hosts file: " + PATHS.hosts(name));
 }
 
-console.log('DNS Program')
-main();
+//console.log('DNS Program')
+//main();
 
 module.exports = { main };

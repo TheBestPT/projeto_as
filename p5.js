@@ -3,12 +3,11 @@ const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
 async function main() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
   let ip = await ask(
     rl,
     "Insert an ip for the reverse zone: ",
@@ -119,5 +118,7 @@ ${lastDigit}  IN  PTR ${domainName}.`;
   console.log(`Reverse zone: ${PATHS.hosts(`${reverseIp}.in-addr.arpa`)}`);
 }
 
-console.log("Reverse zones Program.");
-main();
+// console.log("Reverse zones Program.");
+// main();
+
+module.exports = { main }
