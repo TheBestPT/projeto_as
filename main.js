@@ -50,6 +50,8 @@ async function main() {
       await p7.main();
       break;
     default:
+      console.clear();
+      console.log("AS - Utilities");
       await main();
       break;
   }

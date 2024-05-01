@@ -2,12 +2,9 @@ const { ask, ipRegex, domainRegex, PATHS } = require("./globals");
 const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
+const { deleteReverseZone } = require("./p6");
 
-async function main() {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
+async function createReverseZone(rl) {
   let ip = await ask(
     rl,
     "Insert an ip for the reverse zone: ",
@@ -118,7 +115,56 @@ ${lastDigit}  IN  PTR ${domainName}.`;
   console.log(`Reverse zone: ${PATHS.hosts(`${reverseIp}.in-addr.arpa`)}`);
 }
 
-// console.log("Reverse zones Program.");
-// main();
+async function disableReverseZone(rl) {
+  let confirm = await ask(
+    rl,
+    "Are you sure do disable Reverse Zone? [y/n]: ",
+    "No confirm was typed."
+  );
+  rl.close();
+  if (confirm === "y") {
+    exec(`systemctl stop named`);
+    console.log("Reverse Zone share was disabled");
+  } else {
+    console.log("Program ended");
+    process.exit(0);
+  }
+}
 
-module.exports = { main }
+async function main() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  let option = await ask(
+    rl,
+    "[1] Add Reverse Zone\n[2] Edit Reverse Zone\n[3] Delete Reverse Zone\n[4] Disable Reverse Zone\nChoose an option: ",
+    "No option was typed"
+  );
+
+  switch (option) {
+    case "1":
+      console.clear();
+      console.log("Add Reverse zone");
+      await createReverseZone(rl);
+      break;
+    case "3":
+      console.clear();
+      console.log("Delete Reverse zone");
+      await deleteReverseZone();
+      break;
+    case "4":
+      console.clear();
+      console.log("Disable Reverse zone");
+      await disableReverseZone(rl);
+      break;
+    default:
+      rl.close();
+      console.clear();
+      console.log("Reverse zone");
+      await main();
+      break;
+  }
+}
+
+module.exports = { main };

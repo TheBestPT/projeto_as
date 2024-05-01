@@ -10,12 +10,11 @@ const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
 async function deleteMasterZone(name = null) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
   let fileChoose;
   if (!name) {
     let files;
@@ -39,8 +38,7 @@ async function deleteMasterZone(name = null) {
     let c = 0;
     if (filteredZones.length === 0) {
       console.log("No master zones to delete.");
-      await main();
-      return;
+      process.exit(0);
     }
     filteredZones.forEach((file) => {
       console.log(`[${c++}] ${file}`);
@@ -90,6 +88,10 @@ async function deleteMasterZone(name = null) {
 }
 
 async function deleteVirtualHost() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
   let files;
   try {
     files = fs.readdirSync(PATHS.home);
@@ -155,6 +157,10 @@ async function deleteVirtualHost() {
 }
 
 async function deleteReverseZone() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
   let files;
   try {
     files = fs.readdirSync(PATHS.hostsDir);
@@ -175,9 +181,8 @@ async function deleteReverseZone() {
   );
   let c = 0;
   if (filteredZones.length === 0) {
-    console.log("No master zones to delete.");
-    await main();
-    return;
+    console.log("No reverse zones to delete.");
+    process.exit(0);
   }
   filteredZones.forEach((file) => {
     console.log(`[${c++}] ${file}`);
@@ -245,4 +250,4 @@ async function main() {
   }
 }
 
-main();
+module.exports = { deleteMasterZone, deleteVirtualHost, deleteReverseZone };
