@@ -8,7 +8,7 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-async function createShare() {
+async function createShare(update = null) {
   let path = await ask(
     rl,
     "Insert the path to the directory to be shared: ",
@@ -20,6 +20,9 @@ async function createShare() {
     "No ip was typed"
   );
   rl.close();
+  if(!ipRegex.test(ip) || ip[ip.length - 1] !== '0') {
+    throw new Error('Invalid ip was typed.')
+  }
   try {
     fs.readdirSync(path);
   } catch (e) {
@@ -33,7 +36,16 @@ async function createShare() {
     throw new Error("Cannot read file: ", PATHS.nfsExport);
   }
 
-  nfsExport += `${path} ${ip}/24(rw,hide,sync)`;
+  if (update) {
+    nfsExport = nfsExport.replace(
+      update,
+      `\n${path.startsWith("/") ? path : "/" + path} ${ip}/24(rw,hide,sync)\n`
+    );
+  } else {
+    nfsExport += `\n${
+      path.startsWith("/") ? path : "/" + path
+    } ${ip}/24(rw,hide,sync)\n`;
+  }
 
   try {
     fs.writeFileSync(PATHS.nfsExport, nfsExport);
@@ -43,7 +55,11 @@ async function createShare() {
 
   exec(`systemctl restart nfs`);
 
-  console.log("Nfs share created.");
+  if (update) {
+    console.log("Nfs share updated with success.");
+  } else {
+    console.log("Nfs share created with success.");
+  }
 }
 
 async function disableShare() {
@@ -62,6 +78,30 @@ async function disableShare() {
   }
 }
 
+async function updateShare() {
+  let nfsExport;
+  try {
+    nfsExport = fs.readFileSync(PATHS.nfsExport, "utf8");
+  } catch (e) {
+    throw new Error("Cannot read file: ", PATHS.nfsExport);
+  }
+  let options = nfsExport.split("\n");
+  options = options.filter((o) => o !== '')
+  let optionDisplay = "";
+  for (let i = 0; i < options.length; i++) {
+    if (options[i] !== "") {
+      optionDisplay += "[" + i + "] " + options[i] + "\n";
+    }
+  }
+  let updateOption = await ask(
+    rl,
+    optionDisplay + "Choose witch one you want to update: ",
+    "No option was typed"
+  );
+  //rl.close();
+  await createShare(options[parseInt(updateOption)])
+}
+
 async function deleteShare() {
   let nfsExport;
   try {
@@ -69,14 +109,21 @@ async function deleteShare() {
   } catch (e) {
     throw new Error("Cannot read file: ", PATHS.nfsExport);
   }
-  let options = nfsExport.split('\n')
-  let optionDisplay = ''
-  for(let i = 0; i < options.length; i++) {
-    optionDisplay += '[' + i + '] ' +options[i]
+  let options = nfsExport.split("\n");
+  options = options.filter((o) => o !== '')
+  let optionDisplay = "";
+  for (let i = 0; i < options.length; i++) {
+    if (options[i] !== "") {
+      optionDisplay += "[" + i + "] " + options[i] + "\n";
+    }
   }
-  let deleteOption = await ask(rl, optionDisplay + '\nChoose witch one you want to delete: ', "No option was typed");
-  if(parseInt(deleteOption) < 0 || parseInt(deleteOption) > options.length) {
-    throw new Error('No valid option was typed.')
+  let deleteOption = await ask(
+    rl,
+    optionDisplay + "Choose witch one you want to delete: ",
+    "No option was typed"
+  );
+  if (parseInt(deleteOption) < 0 || parseInt(deleteOption) > options.length) {
+    throw new Error("No valid option was typed.");
   }
   let confirm = await ask(
     rl,
@@ -85,7 +132,7 @@ async function deleteShare() {
   );
   rl.close();
   if (confirm == "y" || confirm == "Y") {
-    nfsExport = nfsExport.replace(options[parseInt(deleteOption)], '');
+    nfsExport = nfsExport.replace(options[parseInt(deleteOption)], "");
 
     try {
       fs.writeFileSync(PATHS.nfsExport, nfsExport);
@@ -114,6 +161,7 @@ async function main() {
       await createShare();
       break;
     case "2":
+      await updateShare();
       break;
     case "3":
       await deleteShare();
