@@ -5,7 +5,7 @@ const {
   askUpdate,
   defaultHost,
   getLocalIp,
-} = require("./globals");
+} = require("../globals");
 const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");

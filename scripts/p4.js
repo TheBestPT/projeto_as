@@ -1,14 +1,13 @@
-const { PATHS, ask, ipRegex, domainRegex } = require("./globals");
+const { PATHS, ask, ipRegex, domainRegex } = require("../globals");
 const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
 async function main() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
   let domainName = await ask(
     rl,
     "Insert a domain name to add an A or MX record: ",
@@ -62,5 +61,8 @@ async function main() {
   console.log(`Host file: ${PATHS.hosts(domainName)}`);
 }
 
-console.log('Program to create reacords A or MX')
-main();
+console.log("Program to create records A or MX");
+
+module.exports = {
+  main,
+};

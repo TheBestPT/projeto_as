@@ -1,4 +1,4 @@
-const { PATHS, ask, domainRegex, getLocalIp } = require("./globals");
+const { PATHS, ask, domainRegex, getLocalIp } = require("../globals");
 const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");

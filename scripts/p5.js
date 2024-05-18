@@ -1,4 +1,4 @@
-const { ask, ipRegex, domainRegex, PATHS } = require("./globals");
+const { ask, ipRegex, domainRegex, PATHS } = require("../globals");
 const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
@@ -113,6 +113,10 @@ ${lastDigit}  IN  PTR ${domainName}.`;
   console.log("reverse zone added with success");
   console.log(`Named conf: ${PATHS.zones}`);
   console.log(`Reverse zone: ${PATHS.hosts(`${reverseIp}.in-addr.arpa`)}`);
+}
+
+async function updateReverseZone(rl) {
+  
 }
 
 async function disableReverseZone(rl) {
