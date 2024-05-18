@@ -2,13 +2,14 @@ const {
   domainRegex,
   PATHS,
   ask,
+  askUpdate,
   defaultHost,
   getLocalIp,
 } = require("./globals");
 const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
-const {deleteMasterZone} = require("./p6");
+const { deleteMasterZone } = require("./p6");
 
 // const rl = readline.createInterface({
 //   input: process.stdin,
@@ -73,6 +74,88 @@ async function createDNS(rl) {
   console.log("Path to hosts file: " + PATHS.hosts(name));
 }
 
+async function updateDNS(rl) {
+  let files;
+  try {
+    files = fs.readdirSync(PATHS.hostsDir);
+  } catch (e) {
+    throw new Error("Cannot read directory: ", PATHS.hostsDir);
+  }
+
+  const pattern = /\.hosts$/;
+  const reversePattern = /\.in-addr\.arpa\.hosts$/;
+  const nonReversePattern = /(?<!\.in-addr\.arpa)\.hosts$/;
+  const filteredZones = files.filter(
+    (file) =>
+      pattern.test(file) &&
+      nonReversePattern.test(file) &&
+      !reversePattern.test(file) &&
+      !file.includes("named") &&
+      file.includes("hosts")
+  );
+  let c = 0;
+  if (filteredZones.length === 0) {
+    console.log("No master zones to update.");
+    process.exit(0);
+  }
+  filteredZones.forEach((file) => {
+    console.log(`[${c++}] ${file}`);
+  });
+  let option = await ask(
+    rl,
+    "Type the number of what record to update: ",
+    "No option was typed"
+  );
+  let domainName = filteredZones[parseInt(option)];
+  domainName = domainName.replace(".hosts", "");
+
+  let namedConf;
+  try {
+    namedConf = fs.readFileSync(PATHS.zones, "utf8");
+  } catch (e) {
+    throw new Error("Couldn't read file: " + PATHS.zones);
+  }
+
+  let changeDomainName = await askUpdate(
+    rl,
+    `Do you to change the domain name? [Current value: ${domainName}, press ENTER to set it] `
+  );
+
+  if (!domainRegex.test(changeDomainName) && changeDomainName !== "") {
+    console.log("Invalid domain name type again!");
+    await updateDNS(rl);
+    rl.close();
+    return;
+  }
+
+  rl.close();
+
+  namedConf = namedConf.replace(
+    `zone "${domainName}" IN {
+    type master;
+    file "${PATHS.hosts(domainName)}";
+  };`,
+    `zone "${changeDomainName}" IN {
+    type master;
+    file "${PATHS.hosts(changeDomainName)}";
+  };`
+  );
+
+  try {
+    fs.writeFileSync(PATHS.zones, namedConf);
+  } catch (e) {
+    throw new Error("Cannot read file: ", PATHS.zones);
+  }
+
+  exec(
+    `mv /var/named/${domainName}.hosts /var/named/${changeDomainName}.hosts`
+  );
+
+  exec(`systemctl restart named`);
+
+  console.log("Update with success");
+}
+
 async function disabledDNS(rl) {
   let confirm = await ask(
     rl,
@@ -105,19 +188,28 @@ async function main() {
       console.log("Add DNS");
       await createDNS(rl);
       break;
-    case "3":
-      rl.close()
+
+    case "2":
       console.clear();
-      console.log('Delete DNS')
-      await deleteMasterZone()
+      console.log("Edit DNS");
+      await updateDNS(rl);
       break;
+
+    case "3":
+      rl.close();
+      console.clear();
+      console.log("Delete DNS");
+      await deleteMasterZone();
+      break;
+
     case "4":
       console.clear();
       console.log("Disable DNS");
       await disabledDNS(rl);
       break;
+
     default:
-      rl.close()
+      rl.close();
       console.clear();
       console.log("DNS");
       await main();

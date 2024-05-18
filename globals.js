@@ -1,6 +1,6 @@
 const { networkInterfaces } = require("os");
 
-ask = async (rl, msg, noInputMsg) => {
+const ask = async (rl, msg, noInputMsg) => {
   return new Promise((resolve, reject) => {
     rl.question(msg, (data) => {
       if (!data) {
@@ -12,7 +12,15 @@ ask = async (rl, msg, noInputMsg) => {
   });
 };
 
-getLocalIp = () => {
+const askUpdate = async (rl, msg) => {
+  return new Promise((resolve, reject) => {
+    rl.question(msg, (data) => {
+      resolve(data);
+    });
+  });
+};
+
+const getLocalIp = () => {
   const nets = networkInterfaces();
   const results = Object.create(null); // or just '{}', an empty object
 
@@ -48,16 +56,11 @@ const PATHS = {
   hostsDir: `/var/named/`,
   httpConf: "/etc/httpd/conf/httpd.conf",
   home: "/home",
-  nfsExport: '/etc/exports',
-  smbConf: '/etc/samba/smb.conf'
+  nfsExport: "/etc/exports",
+  smbConf: "/etc/samba/smb.conf",
 };
 
-const reserveDirSmb = [
-  '[global]',
-  '[homes]',
-  '[printers]',
-  '[print$]',
-]
+const reserveDirSmb = ["[global]", "[homes]", "[printers]", "[print$]"];
 
 const ipRegex =
   /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
@@ -69,8 +72,9 @@ module.exports = {
   defaultHost,
   getLocalIp,
   ask,
+  askUpdate,
   ipRegex,
   domainRegex,
   reverseZoneRegex,
-  reserveDirSmb
+  reserveDirSmb,
 };

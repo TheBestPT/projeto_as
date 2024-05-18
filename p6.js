@@ -119,7 +119,9 @@ async function deleteVirtualHost() {
   rl.close();
 
   let selectOption = filteredZones[parseInt(option)];
+
   await deleteMasterZone(selectOption + ".hosts");
+
   let httpConf;
   try {
     httpConf = fs.readFileSync(PATHS.httpConf, "utf8");
