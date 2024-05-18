@@ -1,9 +1,7 @@
 const {
   ask,
-  ipRegex,
   domainRegex,
   PATHS,
-  reverseZoneRegex,
   getLocalIp,
 } = require("./globals");
 const readline = require("readline");

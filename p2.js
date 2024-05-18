@@ -104,7 +104,6 @@ async function editShare(rl) {
   });
 
   let option = await ask(rl, "Choose one to edit: ", "No option was typed.");
-  //rl.close();
   await createShare(
     rl, smbConf[parseInt(option)].substring(1, smbConf[parseInt(option)].length - 1)
   );

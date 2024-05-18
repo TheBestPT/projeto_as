@@ -20,7 +20,7 @@ async function createVirtualHost(rl) {
 
   let httpdConf;
   try {
-    httpdConf = fs.readFileSync(PATHS.httpConf);
+    httpdConf = fs.readFileSync(PATHS.httpConf, "utf8");
   } catch (e) {
     throw new Error("Cannot read file: " + PATHS.httpConf);
   }
@@ -57,6 +57,104 @@ async function createVirtualHost(rl) {
   console.log(`Path to the user created: /home/${name}`);
 }
 
+async function updateVirtualHost(rl) {
+  let files;
+  try {
+    files = fs.readdirSync(PATHS.home);
+  } catch (e) {
+    throw new Error("Cannot read directory: ", PATHS.hostsDir);
+  }
+
+  let filteredZones = files.filter((file) => domainRegex.test(file));
+
+  if (filteredZones.length === 0) {
+    console.log("No master zones to delete.");
+    await main();
+    return;
+  }
+  let c = 0;
+  filteredZones.forEach((file) => {
+    console.log(`[${c++}] ${file}`);
+  });
+
+  let option = await ask(
+    rl,
+    "Type the number of what record delete: ",
+    "No option was typed"
+  );
+
+  let selectOption = filteredZones[parseInt(option)];
+
+  let changeVirtualHost = await ask(
+    rl,
+    "Type the virtual host name to update it: ",
+    "No Virtual Host was typed in."
+  );
+
+  
+
+  if (!domainRegex.test(changeVirtualHost)) {
+    console.log("Invalid domain name type again!");
+    await main();
+    rl.close();
+    return;
+  }
+
+  rl.close();
+
+  //Remove old user
+  exec(`userdel ${selectOption}`);
+  exec(`rm -rf /home/${selectOption}`);
+
+  //Add user
+  exec(`adduser ${changeVirtualHost}`);
+  exec(`mkdir /home/${changeVirtualHost}`);
+  exec(`echo "${changeVirtualHost}" > /home/${changeVirtualHost}/index.html`);
+  exec(`chmod 755 /home/${changeVirtualHost} -R`);
+
+  let httpdConf;
+  try {
+    httpdConf = fs.readFileSync(PATHS.httpConf, "utf8");
+  } catch (e) {
+    throw new Error("Cannot read file: " + PATHS.httpConf);
+  }
+
+  
+
+  httpdConf = httpdConf.replace(
+    `DocumentRoot "/home/${selectOption}/"
+  ServerName www.${selectOption}
+  ServerAlias ${selectOption}
+  <Directory "/home/${selectOption}">
+    Options Indexes FollowSymLinks
+    AllowOverride All
+    Order allow,deny
+    Allow from all
+    Require method GET POST OPTIONS
+  </Directory>`,
+  `DocumentRoot "/home/${changeVirtualHost}/"
+  ServerName www.${changeVirtualHost}
+  ServerAlias ${changeVirtualHost}
+  <Directory "/home/${changeVirtualHost}">
+    Options Indexes FollowSymLinks
+    AllowOverride All
+    Order allow,deny
+    Allow from all
+    Require method GET POST OPTIONS
+  </Directory>`
+  );
+
+  try {
+    fs.writeFileSync(PATHS.httpConf, httpdConf);
+  } catch (e) {
+    throw new Error("Cannot write file: ", PATHS.httpConf);
+  }
+
+  exec(`systemctl restart httpd`);
+
+  console.log("Virtual host updated with success");
+}
+
 async function disableVirtualHost(rl) {
   let confirm = await ask(
     rl,
@@ -70,7 +168,7 @@ async function disableVirtualHost(rl) {
   } else {
     console.log("Program ended");
     process.exit(0);
-  }  
+  }
 }
 
 async function main() {
@@ -89,16 +187,25 @@ async function main() {
       console.log("Add Virtual Host");
       await createVirtualHost(rl);
       break;
+
+    case "2":
+      console.clear();
+      console.log("Edit Virtual Host");
+      await updateVirtualHost(rl);
+      break;
+
     case "3":
       console.clear();
       console.log("Delete Virtual Host");
       await deleteVirtualHost();
       break;
+
     case "4":
       console.clear();
       console.log("Disable Virtual Host");
       await disableVirtualHost(rl);
       break;
+
     default:
       rl.close();
       console.clear();

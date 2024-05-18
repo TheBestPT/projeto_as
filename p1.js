@@ -116,12 +116,13 @@ async function updateDNS(rl) {
     throw new Error("Couldn't read file: " + PATHS.zones);
   }
 
-  let changeDomainName = await askUpdate(
+  let changeDomainName = await ask(
     rl,
-    `Do you to change the domain name? [Current value: ${domainName}, press ENTER to set it] `
+    "Type a domain name to update it: ",
+    "No domain was typed"
   );
 
-  if (!domainRegex.test(changeDomainName) && changeDomainName !== "") {
+  if (!domainRegex.test(changeDomainName)) {
     console.log("Invalid domain name type again!");
     await updateDNS(rl);
     rl.close();
