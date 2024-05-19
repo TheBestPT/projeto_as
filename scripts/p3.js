@@ -1,4 +1,10 @@
-const { PATHS, ask, domainRegex, getLocalIp } = require("../globals");
+const {
+  PATHS,
+  ask,
+  domainRegex,
+  getLocalIp,
+  defaultHost,
+} = require("../globals");
 const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
@@ -18,6 +24,38 @@ async function createVirtualHost(rl) {
     await main();
     return;
   }
+
+  //Add domain name to named
+  let named;
+  try {
+    named = fs.readFileSync(PATHS.zones, "utf8");
+  } catch (e) {
+    throw new Error("Couldn't read file: " + PATHS.zones);
+  }
+
+  if (!named.includes(`"${name}"`)) {
+    named += `\nzone "${name}" IN {
+      type master;
+      file "${PATHS.hosts(name)}";
+  };`;
+
+    try {
+      fs.writeFileSync(PATHS.zones, named);
+    } catch (e) {
+      throw new Error("Couldn't write file: " + PATHS.zones);
+    }
+
+    let hostContent =
+      defaultHost + `\n  IN  A  ${getLocalIp()}\nwww  IN  A  ${getLocalIp()}`;
+    
+    try {
+      fs.writeFileSync(PATHS.hosts(name), hostContent);
+    } catch (e) {
+      throw new Error("Couldn't write file: " + PATHS.hosts(name));
+    }
+  }
+
+  //END
 
   let httpdConf;
   try {
@@ -52,10 +90,13 @@ async function createVirtualHost(rl) {
   }
 
   exec(`systemctl restart httpd`);
+  exec(`systemctl restart named`);
 
   console.log("Virtual host created with success");
   console.log(`Http config: ${PATHS.httpConf}`);
   console.log(`Path to the user created: /home/${name}`);
+  console.log("Path to named config: " + PATHS.zones);
+  console.log("Path to hosts file: " + PATHS.hosts(name));
 }
 
 async function updateVirtualHost(rl) {
@@ -85,7 +126,7 @@ async function updateVirtualHost(rl) {
     "No option was typed"
   );
 
-  if (isNaN(parseInt(option))) {
+  if (isNaN(parseInt(option)) || !filteredZones[parseInt(option)]) {
     console.log("Invalid option type again!");
     rl.close();
     await main();
@@ -108,6 +149,13 @@ async function updateVirtualHost(rl) {
   }
 
   rl.close();
+
+  let namedConf1;
+  try {
+    namedConf1 = fs.readFileSync(PATHS.zones, "utf8");
+  } catch (e) {
+    throw new Error("Couldn't read file: " + PATHS.zones);
+  }
 
   //Remove old user
   exec(`userdel ${selectOption}`);
@@ -155,7 +203,40 @@ async function updateVirtualHost(rl) {
     throw new Error("Cannot write file: ", PATHS.httpConf);
   }
 
+  //Update domain in named
+  let namedConf;
+  try {
+    namedConf = fs.readFileSync(PATHS.zones, "utf8");
+  } catch (e) {
+    throw new Error("Couldn't read file: " + PATHS.zones);
+  }
+
+
+
+  namedConf = namedConf.replace(
+    `zone "${selectOption}" IN {
+    type master;
+    file "${PATHS.hosts(selectOption)}";
+  };`,
+    `zone "${changeVirtualHost}" IN {
+    type master;
+    file "${PATHS.hosts(changeVirtualHost)}";
+  };`
+  );
+
+  try {
+    fs.writeFileSync(PATHS.zones, namedConf);
+  } catch (e) {
+    throw new Error("Cannot read file: ", PATHS.zones);
+  }
+
+  exec(
+    `mv /var/named/${selectOption}.hosts /var/named/${changeVirtualHost}.hosts`
+  );
+
+  exec(`systemctl restart named`);
   exec(`systemctl restart httpd`);
+  //END
 
   console.log("Virtual host updated with success");
   console.log(`Http config: ${PATHS.httpConf}`);

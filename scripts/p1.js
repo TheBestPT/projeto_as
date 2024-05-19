@@ -162,7 +162,7 @@ async function updateDNS(rl) {
 
   console.log("The master zone and it's hosts file were updated with success.");
   console.log("Path to named config: " + PATHS.zones);
-  console.log("Path to hosts file: " + PATHS.hosts(domainName));
+  console.log("Path to hosts file: " + PATHS.hosts(changeDomainName));
 }
 
 async function disabledDNS(rl) {
