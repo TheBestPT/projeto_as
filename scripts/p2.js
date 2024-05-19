@@ -16,46 +16,27 @@ async function createShare(rl, pathEdit = null) {
     throw new Error("Cannot read directory: ", path);
   }
 
-  //I disabled choosing if a directory was readonly because of delete and edit
-  // let readOnly = await ask(rl, "Is it read only? [y/n]: ", "No y/n was typed");
-  // let readOnlyOpt = "no";
-  // if (readOnly === "y") {
-  //   readOnlyOpt = "yes";
-  // }
-
-  // let browsable = await ask(rl, "Is it browsable? [y/n]: ", "No y/n was typed");
-  // rl.close();
-  // let browsableOpt = "no";
-  // if (browsable === "y") {
-  //   browsableOpt = "yes";
-  // }
-
   let smbConfig;
   try {
     smbConfig = fs.readFileSync(PATHS.smbConf, "utf8");
   } catch (e) {
     throw new Error("Cannot read file: ", PATHS.smbConf);
   }
+
   if (!pathEdit) {
     smbConfig += `\n[${path.startsWith("/") ? path.substring(1) : path}]
     comment = SMB share ${path}
     path = ${!path.startsWith("/") ? "/" + path : path}
-    read only = yes
+    read only = no
     browsable = yes`;
   } else {
-    console.log(
-      `\n[${
-        pathEdit.startsWith("/") ? pathEdit.substring(1) : pathEdit
-      }]\n  comment = SMB share /${pathEdit}\n  path = ${
-        !pathEdit.startsWith("/") ? "/" + pathEdit : pathEdit
-      }\n  read only = no\n  browsable = yes`
-    );
 
-    let stringReplace = `\n[${
-      pathEdit.startsWith("/") ? pathEdit.substring(1) : pathEdit
-    }]\n  comment = SMB share /${pathEdit}\n  path = ${
-      !pathEdit.startsWith("/") ? "/" + pathEdit : pathEdit
-    }\n  read only = no\n  browsable = yes`;
+    let stringReplace = `[${pathEdit.startsWith("/") ? pathEdit.substring(1) : pathEdit}]
+    comment = SMB share /${pathEdit}
+    path = ${!pathEdit.startsWith("/") ? "/" + pathEdit : pathEdit}
+    read only = no
+    browsable = yes`;
+
 
     smbConfig = smbConfig.replace(
       stringReplace,
@@ -137,26 +118,22 @@ async function deleteShare(rl) {
     return s.includes(smbShare);
   });
 
-  if(!idx) {
-    console.log('Share not found');
+  if (!idx) {
+    console.log("Share not found");
     await main();
     return;
   }
 
-  let share = [smbConfig.split("\n")[idx]]
-  share.push(smbConfig.split("\n")[idx + 1])
-  share.push(smbConfig.split("\n")[idx + 2])
-  share.push(smbConfig.split("\n")[idx + 3])
-  share.push(smbConfig.split("\n")[idx + 4])
+  let share = [smbConfig.split("\n")[idx]];
+  share.push(smbConfig.split("\n")[idx + 1]);
+  share.push(smbConfig.split("\n")[idx + 2]);
+  share.push(smbConfig.split("\n")[idx + 3]);
+  share.push(smbConfig.split("\n")[idx + 4]);
 
-  smbConfig = smbConfig.replace(share.reduce((a, b) => a + '\n' + b), ``);
-
-  // smbConfig = smbConfig.replace(
-  //   `\n[${smbShare}]\n  comment = SMB share /${pathEdit}\n  path = ${
-  //     !pathEdit.startsWith("/") ? "/" + pathEdit : pathEdit
-  //   }\n  read only = no\n  browsable = yes`,
-  //   ""
-  // );
+  smbConfig = smbConfig.replace(
+    share.reduce((a, b) => a + "\n" + b),
+    ``
+  );
 
   try {
     fs.writeFileSync(PATHS.smbConf, smbConfig);
