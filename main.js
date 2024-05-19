@@ -24,36 +24,42 @@ async function main() {
 
   switch (option) {
     case "1":
+      exec("systemctl start named");
       console.clear();
       console.log("DNS");
       await p1.main();
       break;
 
     case "2":
+      exec("systemctl start smb");
       console.clear();
       console.log("SMB (Samba)");
       await p2.main();
       break;
 
     case "3":
+      exec("systemctl start httpd");
       console.clear();
       console.log("Virtual Hosts");
       await p3.main();
       break;
 
     case "4":
+      exec("systemctl start named");
       console.clear();
       console.log("A or MX Records");
       await p4.main();
       break;
 
     case "5":
+      exec("systemctl start named");
       console.clear();
       console.log("Reverse Zone");
       await p5.main();
       break;
 
     case "6":
+      exec("systemctl start nfs");
       console.clear();
       console.log("NFS");
       await p7.main();
