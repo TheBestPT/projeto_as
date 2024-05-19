@@ -21,6 +21,12 @@ async function main() {
     "[1] DNS\n[2] SMB (Samba)\n[3] Virtual Hosts\n[4] A or MX Records\n[5] Reverse Zone\n[6] NFS\nType an option: ",
     ""
   );
+
+  if (isNaN(parseInt(option))) {
+    await main();
+    return;
+  }
+
   rlMain.close();
 
   switch (option) {

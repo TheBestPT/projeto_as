@@ -189,8 +189,9 @@ async function main() {
     input: process.stdin,
     output: process.stdout,
   });
-  
 
+  
+  
   let option = await ask(
     rl,
     "[1] Add DNS\n[2] Edit DNS\n[3] Delete DNS\n[4] Disable DNS\nChoose an option: ",

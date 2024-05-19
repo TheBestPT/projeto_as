@@ -274,6 +274,7 @@ async function main() {
     input: process.stdin,
     output: process.stdout,
   });
+
   let option = await ask(
     rl,
     "[1] Add Reverse Zone\n[2] Edit Reverse Zone\n[3] Delete Reverse Zone\n[4] Disable Reverse Zone\nChoose an option: ",
@@ -308,8 +309,6 @@ async function main() {
 
     default:
       rl.close();
-      console.clear();
-      console.log("Reverse zone");
       await main();
       break;
   }

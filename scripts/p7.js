@@ -201,6 +201,9 @@ async function main() {
       break;
 
     default:
+      rl.close()
+      console.clear();
+      console.log("NFS");
       await main();
       break;
   }

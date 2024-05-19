@@ -107,7 +107,7 @@ async function deleteShare(rl) {
 
   let option = await ask(rl, "Choose one to delete: ", "No option was typed.");
 
-  if(isNaN(parseInt(option))) {
+  if (isNaN(parseInt(option))) {
     console.log("Invalid option type again!");
     rl.close();
     await main();
@@ -209,6 +209,9 @@ async function main() {
       break;
 
     default:
+      rl.close();
+      console.clear();
+      console.log("SMB (Samba)");
       await main();
       break;
   }

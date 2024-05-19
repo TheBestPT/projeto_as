@@ -85,7 +85,7 @@ async function updateVirtualHost(rl) {
     "No option was typed"
   );
 
-  if(isNaN(parseInt(option))) {
+  if (isNaN(parseInt(option))) {
     console.log("Invalid option type again!");
     rl.close();
     await main();
@@ -99,8 +99,6 @@ async function updateVirtualHost(rl) {
     "Type the virtual host name to update it: ",
     "No Virtual Host was typed in."
   );
-
-  
 
   if (!domainRegex.test(changeVirtualHost)) {
     console.log("Invalid domain name type again!");
@@ -128,8 +126,6 @@ async function updateVirtualHost(rl) {
     throw new Error("Cannot read file: " + PATHS.httpConf);
   }
 
-  
-
   httpdConf = httpdConf.replace(
     `DocumentRoot "/home/${selectOption}/"
   ServerName www.${selectOption}
@@ -141,7 +137,7 @@ async function updateVirtualHost(rl) {
     Allow from all
     Require method GET POST OPTIONS
   </Directory>`,
-  `DocumentRoot "/home/${changeVirtualHost}/"
+    `DocumentRoot "/home/${changeVirtualHost}/"
   ServerName www.${changeVirtualHost}
   ServerAlias ${changeVirtualHost}
   <Directory "/home/${changeVirtualHost}">
@@ -187,11 +183,13 @@ async function main() {
     input: process.stdin,
     output: process.stdout,
   });
+
   let option = await ask(
     rl,
     "[1] Add Virtual Host\n[2] Edit Virtual Host\n[3] Delete Virtual Host\n[4] Disable Virtual Host\nChoose an option: ",
     "No option was typed"
   );
+
   switch (option) {
     case "1":
       console.clear();
