@@ -6,6 +6,7 @@ const p5 = require("./scripts/p5");
 const p7 = require("./scripts/p7");
 const { ask } = require("./globals");
 const readline = require("readline");
+const { exec } = require("child_process");
 
 const rlMain = readline.createInterface({
   input: process.stdin,

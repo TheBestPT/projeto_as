@@ -8,11 +8,46 @@ async function main() {
     input: process.stdin,
     output: process.stdout,
   });
-  let domainName = await ask(
-    rl,
-    "Insert a domain name to add an A or MX record: ",
-    "No name was typed."
+
+  let files;
+  try {
+    files = fs.readdirSync(PATHS.hostsDir);
+  } catch (e) {
+    throw new Error("Cannot read directory: ", PATHS.hostsDir);
+  }
+
+  const pattern = /\.hosts$/;
+  const reversePattern = /\.in-addr\.arpa\.hosts$/;
+  const nonReversePattern = /(?<!\.in-addr\.arpa)\.hosts$/;
+  const filteredZones = files.filter(
+    (file) =>
+      pattern.test(file) &&
+      nonReversePattern.test(file) &&
+      !reversePattern.test(file) &&
+      !file.includes("named") &&
+      file.includes("hosts")
   );
+  let c = 0;
+  if (filteredZones.length === 0) {
+    console.log("No master zones to update.");
+    process.exit(0);
+  }
+  filteredZones.forEach((file) => {
+    console.log(`[${c++}] ${file}`);
+  });
+  let option = await ask(
+    rl,
+    "Type the number of what record to update: ",
+    "No option was typed"
+  );
+  let domainName = filteredZones[parseInt(option)];
+  domainName = domainName.replace(".hosts", "");
+
+  // let domainName = await ask(
+  //   rl,
+  //   "Insert a domain name to add an A or MX record: ",
+  //   "No name was typed."
+  // );
   if (!domainRegex.test(domainName)) {
     console.log("Invalid domain name type again!");
     await main();
@@ -24,6 +59,8 @@ async function main() {
     "What type do you want do insert? A or MX?: ",
     "No record type was typed."
   );
+  
+
   if (recordType !== "A" && recordType !== "MX") {
     console.log("Invalid record type, program will restart");
     await main();
