@@ -30,9 +30,8 @@ async function createShare(rl, pathEdit = null) {
     read only = no
     browsable = yes`;
   } else {
-    let stringReplace = `[${
-      pathEdit.startsWith("/") ? pathEdit.substring(1) : pathEdit
-    }]
+    let stringReplace = `[${pathEdit.startsWith("/") ? pathEdit.substring(1) : pathEdit
+      }]
     comment = SMB share /${pathEdit}
     path = ${!pathEdit.startsWith("/") ? "/" + pathEdit : pathEdit}
     read only = no
@@ -40,10 +39,8 @@ async function createShare(rl, pathEdit = null) {
 
     smbConfig = smbConfig.replace(
       stringReplace,
-      `\n[${
-        path.startsWith("/") ? path.substring(1) : path
-      }]\n  comment = SMB share ${path}\n  path = ${
-        !path.startsWith("/") ? "/" + path : path
+      `\n[${path.startsWith("/") ? path.substring(1) : path
+      }]\n  comment = SMB share ${path}\n  path = ${!path.startsWith("/") ? "/" + path : path
       }\n  read only = no\n  browsable = yes`
     );
   }
@@ -77,7 +74,7 @@ async function editShare(rl) {
 
   let option = await ask(rl, "Choose one to edit: ", "No option was typed.");
 
-  if (isNaN(parseInt(option) || !filteredZones[parseInt(option)]) 
+  if (isNaN(parseInt(option) || !filteredZones[parseInt(option)])
   ) {
     console.log("Invalid option type again!");
     rl.close();
@@ -108,7 +105,7 @@ async function deleteShare(rl) {
 
   let option = await ask(rl, "Choose one to delete: ", "No option was typed.");
 
-  if (isNaN(parseInt(option)) || !filteredZones[parseInt(option)]) {
+  if (isNaN(parseInt(option)) || !smbConf[parseInt(option)]) {
     console.log("Invalid option type again!");
     rl.close();
     await main();
