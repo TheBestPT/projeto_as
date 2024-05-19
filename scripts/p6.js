@@ -1,9 +1,4 @@
-const {
-  ask,
-  domainRegex,
-  PATHS,
-  getLocalIp,
-} = require("../globals");
+const { ask, domainRegex, PATHS, getLocalIp } = require("../globals");
 const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
@@ -13,6 +8,7 @@ async function deleteMasterZone(name = null) {
     input: process.stdin,
     output: process.stdout,
   });
+
   let fileChoose;
   if (!name) {
     let files;
@@ -33,20 +29,24 @@ async function deleteMasterZone(name = null) {
         !file.includes("named") &&
         file.includes("hosts")
     );
+
     let c = 0;
     if (filteredZones.length === 0) {
       console.log("No master zones to delete.");
       process.exit(0);
     }
+
     filteredZones.forEach((file) => {
       console.log(`[${c++}] ${file}`);
     });
+
     let option = await ask(
       rl,
       "Type the number of what record delete: ",
       "No option was typed"
     );
     rl.close();
+
     fileChoose = filteredZones[parseInt(option)];
   } else {
     fileChoose = name;
@@ -90,6 +90,7 @@ async function deleteVirtualHost() {
     input: process.stdin,
     output: process.stdout,
   });
+
   let files;
   try {
     files = fs.readdirSync(PATHS.home);
@@ -104,6 +105,7 @@ async function deleteVirtualHost() {
     await main();
     return;
   }
+
   let c = 0;
   filteredZones.forEach((file) => {
     console.log(`[${c++}] ${file}`);
@@ -161,6 +163,7 @@ async function deleteReverseZone() {
     input: process.stdin,
     output: process.stdout,
   });
+
   let files;
   try {
     files = fs.readdirSync(PATHS.hostsDir);
@@ -179,20 +182,24 @@ async function deleteReverseZone() {
       !file.includes("named") &&
       file.includes("hosts")
   );
+
   let c = 0;
   if (filteredZones.length === 0) {
     console.log("No reverse zones to delete.");
     process.exit(0);
   }
+
   filteredZones.forEach((file) => {
     console.log(`[${c++}] ${file}`);
   });
+
   let option = await ask(
     rl,
     "Type the number of what record delete: ",
     "No option was typed"
   );
   rl.close();
+
   let fileChoose = filteredZones[parseInt(option)];
   try {
     fs.unlinkSync("/var/named/" + fileChoose);
@@ -232,17 +239,20 @@ async function main() {
     "Select what you wanna delete:\n[1] Master zone\n[2] Virtual Host\n[3] Reverse zone\nType: ",
     "No option was typed."
   );
-  //rl.close();
+  
   switch (deleteWhat) {
     case "1":
       await deleteMasterZone();
       break;
+
     case "2":
       await deleteVirtualHost();
       break;
+
     case "3":
       await deleteReverseZone();
       break;
+
     default:
       console.log("No option was typed.");
       process.exit(0);

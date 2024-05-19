@@ -152,16 +152,19 @@ async function main() {
       console.log("Add Reverse zone");
       await createReverseZone(rl);
       break;
+      
     case "3":
       console.clear();
       console.log("Delete Reverse zone");
       await deleteReverseZone();
       break;
+
     case "4":
       console.clear();
       console.log("Disable Reverse zone");
       await disableReverseZone(rl);
       break;
+
     default:
       rl.close();
       console.clear();

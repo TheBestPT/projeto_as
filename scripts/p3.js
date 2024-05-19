@@ -153,6 +153,8 @@ async function updateVirtualHost(rl) {
   exec(`systemctl restart httpd`);
 
   console.log("Virtual host updated with success");
+  console.log(`Http config: ${PATHS.httpConf}`);
+  console.log(`Path to the user created: /home/${changeVirtualHost}`);
 }
 
 async function disableVirtualHost(rl) {
@@ -214,8 +216,5 @@ async function main() {
       break;
   }
 }
-
-// console.log('Virtual Hosts program')
-// main();
 
 module.exports = { main };

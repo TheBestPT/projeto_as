@@ -2,7 +2,6 @@ const {
   domainRegex,
   PATHS,
   ask,
-  askUpdate,
   defaultHost,
   getLocalIp,
 } = require("../globals");
@@ -11,10 +10,6 @@ const fs = require("fs");
 const { exec } = require("child_process");
 const { deleteMasterZone } = require("./p6");
 
-// const rl = readline.createInterface({
-//   input: process.stdin,
-//   output: process.stdout,
-// });
 
 async function createDNS(rl) {
   let name = await ask(rl, "Insert a domain name: ", "No name was typed.");
@@ -69,7 +64,7 @@ async function createDNS(rl) {
 
   exec(`systemctl restart named`);
 
-  console.log("The master zone and it's hosts file were created.");
+  console.log("The master zone and it's hosts file were created with success.");
   console.log("Path to named config: " + PATHS.zones);
   console.log("Path to hosts file: " + PATHS.hosts(name));
 }
@@ -93,11 +88,13 @@ async function updateDNS(rl) {
       !file.includes("named") &&
       file.includes("hosts")
   );
+
   let c = 0;
   if (filteredZones.length === 0) {
     console.log("No master zones to update.");
     process.exit(0);
   }
+
   filteredZones.forEach((file) => {
     console.log(`[${c++}] ${file}`);
   });
@@ -106,6 +103,7 @@ async function updateDNS(rl) {
     "Type the number of what record to update: ",
     "No option was typed"
   );
+  
   let domainName = filteredZones[parseInt(option)];
   domainName = domainName.replace(".hosts", "");
 
@@ -154,7 +152,9 @@ async function updateDNS(rl) {
 
   exec(`systemctl restart named`);
 
-  console.log("Update with success");
+  console.log("The master zone and it's hosts file were updated with success.");
+  console.log("Path to named config: " + PATHS.zones);
+  console.log("Path to hosts file: " + PATHS.hosts(name));
 }
 
 async function disabledDNS(rl) {
@@ -163,7 +163,9 @@ async function disabledDNS(rl) {
     "Are you sure do disable DNS? [y/n]: ",
     "No confirm was typed."
   );
+
   rl.close();
+
   if (confirm === "y") {
     exec(`systemctl stop named`);
     console.log("DNS share was disabled");
@@ -171,6 +173,7 @@ async function disabledDNS(rl) {
     console.log("Program ended");
     process.exit(0);
   }
+
 }
 
 async function main() {
@@ -178,11 +181,13 @@ async function main() {
     input: process.stdin,
     output: process.stdout,
   });
+
   let option = await ask(
     rl,
     "[1] Add DNS\n[2] Edit DNS\n[3] Delete DNS\n[4] Disable DNS\nChoose an option: ",
     "No option was typed"
   );
+
   switch (option) {
     case "1":
       console.clear();
@@ -217,8 +222,5 @@ async function main() {
       break;
   }
 }
-
-//console.log('DNS Program')
-//main();
 
 module.exports = { main };

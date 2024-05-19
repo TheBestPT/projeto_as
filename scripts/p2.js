@@ -10,11 +10,6 @@ const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
 
-// const rl = readline.createInterface({
-//   input: process.stdin,
-//   output: process.stdout,
-// });
-
 async function createShare(rl, pathEdit = null) {
   let path = await ask(
     rl,
@@ -104,6 +99,7 @@ async function editShare(rl) {
   });
 
   let option = await ask(rl, "Choose one to edit: ", "No option was typed.");
+
   await createShare(
     rl, smbConf[parseInt(option)].substring(1, smbConf[parseInt(option)].length - 1)
   );
@@ -176,24 +172,34 @@ async function main() {
     input: process.stdin,
     output: process.stdout,
   });
+
   let option = await ask(
     rl,
     "[1] Create a share\n[2] Edit a share\n[3] Delete a share\n[4] Disable shares\nType an option: ",
     "No option was selected!"
   );
+
   switch (option) {
     case "1":
       await createShare(rl);
       break;
+
     case "2":
       await editShare(rl);
       break;
+
+    case "3":
+      await deleteShare(rl);
+      break;
+
     case "4":
       await disableShare(rl);
       break;
+
     default:
       await main();
       break;
+
   }
 }
 

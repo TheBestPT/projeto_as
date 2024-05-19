@@ -57,6 +57,7 @@ async function createShare(rl, update = null) {
   } else {
     console.log("Nfs share created with success.");
   }
+  console.log(`NFS config file: ${PATHS.nfsExport}`);
 }
 
 async function disableShare(rl) {
@@ -95,7 +96,7 @@ async function updateShare(rl) {
     optionDisplay + "Choose witch one you want to update: ",
     "No option was typed"
   );
-  //rl.close();
+
   await createShare(rl, options[parseInt(updateOption)])
 }
 
@@ -140,6 +141,7 @@ async function deleteShare(rl) {
     exec(`systemctl restart nfs`);
 
     console.log("The share was deleted with success.");
+    console.log(`NFS config file: ${PATHS.nfsExport}`);
   } else {
     console.log("Program ended");
     process.exit(0);
@@ -151,7 +153,7 @@ async function main() {
     input: process.stdin,
     output: process.stdout,
   });
-  console.log("NFS PROGRAM");
+
   let witchMenu = await ask(
     rl,
     "[1] - Create nfs share\n[2] - Edit nfs share\n[3] - Delete nfs share\n[4] - Disable nfs share\nType an option: ",
@@ -161,12 +163,15 @@ async function main() {
     case "1":
       await createShare(rl);
       break;
+
     case "2":
       await updateShare(rl);
       break;
+
     case "3":
       await deleteShare(rl);
       break;
+      
     case "4":
       await disableShare(rl);
       break;
@@ -176,8 +181,5 @@ async function main() {
       break;
   }
 }
-
-// main();
-
 
 module.exports = { main }

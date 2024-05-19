@@ -59,7 +59,6 @@ async function main() {
     "What type do you want do insert? A or MX?: ",
     "No record type was typed."
   );
-  
 
   if (recordType !== "A" && recordType !== "MX") {
     console.log("Invalid record type, program will restart");
@@ -97,8 +96,6 @@ async function main() {
   console.log("Record added with success");
   console.log(`Host file: ${PATHS.hosts(domainName)}`);
 }
-
-console.log("Program to create records A or MX");
 
 module.exports = {
   main,
