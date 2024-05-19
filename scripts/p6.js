@@ -46,7 +46,7 @@ async function deleteMasterZone(name = null) {
       "No option was typed"
     );
 
-    if (isNaN(parseInt(option))) {
+    if (isNaN(parseInt(option)) || !filteredZones[parseInt(option)]) {
       console.log("Invalid option type again!");
       rl.close();
       process.exit(0);
@@ -125,7 +125,7 @@ async function deleteVirtualHost() {
   );
   rl.close();
 
-  if (isNaN(parseInt(option))) {
+  if (isNaN(parseInt(option)) || !filteredZones[parseInt(option)]) {
     console.log("Invalid option type again!");
     rl.close();
     process.exit(0);
@@ -213,7 +213,7 @@ async function deleteReverseZone() {
   );
   rl.close();
 
-  if (isNaN(parseInt(option))) {
+  if (isNaN(parseInt(option)) || !filteredZones[parseInt(option)]) {
     console.log("Invalid option type again!");
     rl.close();
     process.exit(0);

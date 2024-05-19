@@ -105,7 +105,7 @@ async function updateDNS(rl) {
     "No option was typed"
   );
 
-  if(isNaN(parseInt(option))) {
+  if(isNaN(parseInt(option)) || !filteredZones[parseInt(option)]) {
     console.log("Invalid option type again!");
     rl.close();
     await main();
