@@ -74,7 +74,7 @@ async function editShare(rl) {
 
   let option = await ask(rl, "Choose one to edit: ", "No option was typed.");
 
-  if (isNaN(parseInt(option) || !filteredZones[parseInt(option)])
+  if (isNaN(parseInt(option) || !smbConf[parseInt(option)])
   ) {
     console.log("Invalid option type again!");
     rl.close();
