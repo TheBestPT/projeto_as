@@ -1,11 +1,4 @@
-const {
-  domainRegex,
-  PATHS,
-  ask,
-  defaultHost,
-  getLocalIp,
-  reserveDirSmb,
-} = require("../globals");
+const { PATHS, ask, reserveDirSmb } = require("../globals");
 const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
@@ -45,10 +38,10 @@ async function createShare(rl, pathEdit = null) {
   }
   if (!pathEdit) {
     smbConfig += `\n[${path.startsWith("/") ? path.substring(1) : path}]
-      comment = SMB share ${path}
-      path = ${!path.startsWith("/") ? "/" + path : path}
-      read only = yes
-      browsable = yes`;
+    comment = SMB share ${path}
+    path = ${!path.startsWith("/") ? "/" + path : path}
+    read only = yes
+    browsable = yes`;
   } else {
     console.log(
       `\n[${
@@ -57,12 +50,15 @@ async function createShare(rl, pathEdit = null) {
         !pathEdit.startsWith("/") ? "/" + pathEdit : pathEdit
       }\n  read only = no\n  browsable = yes`
     );
+
+    let stringReplace = `\n[${
+      pathEdit.startsWith("/") ? pathEdit.substring(1) : pathEdit
+    }]\n  comment = SMB share /${pathEdit}\n  path = ${
+      !pathEdit.startsWith("/") ? "/" + pathEdit : pathEdit
+    }\n  read only = no\n  browsable = yes`;
+
     smbConfig = smbConfig.replace(
-      `\n[${
-        pathEdit.startsWith("/") ? pathEdit.substring(1) : pathEdit
-      }]\n  comment = SMB share /${pathEdit}\n  path = ${
-        !pathEdit.startsWith("/") ? "/" + pathEdit : pathEdit
-      }\n  read only = no\n  browsable = yes`,
+      stringReplace,
       `\n[${
         path.startsWith("/") ? path.substring(1) : path
       }]\n  comment = SMB share ${path}\n  path = ${
@@ -101,7 +97,8 @@ async function editShare(rl) {
   let option = await ask(rl, "Choose one to edit: ", "No option was typed.");
 
   await createShare(
-    rl, smbConf[parseInt(option)].substring(1, smbConf[parseInt(option)].length - 1)
+    rl,
+    smbConf[parseInt(option)].substring(1, smbConf[parseInt(option)].length - 1)
   );
 }
 
@@ -125,19 +122,41 @@ async function deleteShare(rl) {
 
   let smbConfig;
   try {
-    fs.readFileSync(PATHS.smbConf, "utf8");
+    smbConfig = fs.readFileSync(PATHS.smbConf, "utf8");
   } catch (e) {
     throw new Error("Cannot read file: ", PATHS.smbConf);
   }
 
-  smbConfig = smbConfig.replace(
-    `\n[${
-      pathEdit.startsWith("/") ? pathEdit.substring(1) : pathEdit
-    }]\n  comment = SMB share /${pathEdit}\n  path = ${
-      !pathEdit.startsWith("/") ? "/" + pathEdit : pathEdit
-    }\n  read only = no\n  browsable = yes`,
-    ""
-  );
+  let smbShare = smbConf[option];
+
+  let idx;
+  let target = smbConfig.split("\n").filter((s, i) => {
+    if (s.includes(smbShare)) {
+      idx = i;
+    }
+    return s.includes(smbShare);
+  });
+
+  if(!idx) {
+    console.log('Share not found');
+    await main();
+    return;
+  }
+
+  let share = [smbConfig.split("\n")[idx]]
+  share.push(smbConfig.split("\n")[idx + 1])
+  share.push(smbConfig.split("\n")[idx + 2])
+  share.push(smbConfig.split("\n")[idx + 3])
+  share.push(smbConfig.split("\n")[idx + 4])
+
+  smbConfig = smbConfig.replace(share.reduce((a, b) => a + '\n' + b), ``);
+
+  // smbConfig = smbConfig.replace(
+  //   `\n[${smbShare}]\n  comment = SMB share /${pathEdit}\n  path = ${
+  //     !pathEdit.startsWith("/") ? "/" + pathEdit : pathEdit
+  //   }\n  read only = no\n  browsable = yes`,
+  //   ""
+  // );
 
   try {
     fs.writeFileSync(PATHS.smbConf, smbConfig);
@@ -199,7 +218,6 @@ async function main() {
     default:
       await main();
       break;
-
   }
 }
 

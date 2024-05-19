@@ -164,6 +164,12 @@ async function updateReverseZone(rl) {
 
   let records = reverseFile.split("\n").splice(8);
 
+  if(records.length === 0 || !records) {
+    console.log('No records to update')
+    await main();
+    return;
+  }
+
   let recordString = records.reduce((a, b) => `${a}  \n${b}`);
 
   console.log(recordString);
