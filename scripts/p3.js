@@ -14,6 +14,7 @@ async function createVirtualHost(rl) {
 
   if (!domainRegex.test(name)) {
     console.log("Invalid domain name type again!");
+    rl.close();
     await main();
     return;
   }
@@ -69,6 +70,7 @@ async function updateVirtualHost(rl) {
 
   if (filteredZones.length === 0) {
     console.log("No master zones to delete.");
+    rl.close();
     await main();
     return;
   }
@@ -79,9 +81,16 @@ async function updateVirtualHost(rl) {
 
   let option = await ask(
     rl,
-    "Type the number of what record delete: ",
+    "Type the number of what record to update: ",
     "No option was typed"
   );
+
+  if(isNaN(parseInt(option))) {
+    console.log("Invalid option type again!");
+    rl.close();
+    await main();
+    return;
+  }
 
   let selectOption = filteredZones[parseInt(option)];
 
@@ -95,8 +104,8 @@ async function updateVirtualHost(rl) {
 
   if (!domainRegex.test(changeVirtualHost)) {
     console.log("Invalid domain name type again!");
-    await main();
     rl.close();
+    await main();
     return;
   }
 
@@ -197,6 +206,7 @@ async function main() {
       break;
 
     case "3":
+      rl.close();
       console.clear();
       console.log("Delete Virtual Host");
       await deleteVirtualHost();

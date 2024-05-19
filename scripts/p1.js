@@ -16,6 +16,7 @@ async function createDNS(rl) {
 
   if (!domainRegex.test(name)) {
     console.log("Invalid domain name type again!");
+    rl.close();
     await main();
     return;
   }
@@ -103,6 +104,13 @@ async function updateDNS(rl) {
     "Type the number of what record to update: ",
     "No option was typed"
   );
+
+  if(isNaN(parseInt(option))) {
+    console.log("Invalid option type again!");
+    rl.close();
+    await main();
+    return;
+  }
   
   let domainName = filteredZones[parseInt(option)];
   domainName = domainName.replace(".hosts", "");
@@ -154,7 +162,7 @@ async function updateDNS(rl) {
 
   console.log("The master zone and it's hosts file were updated with success.");
   console.log("Path to named config: " + PATHS.zones);
-  console.log("Path to hosts file: " + PATHS.hosts(name));
+  console.log("Path to hosts file: " + PATHS.hosts(domainName));
 }
 
 async function disabledDNS(rl) {

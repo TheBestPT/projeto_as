@@ -45,6 +45,13 @@ async function deleteMasterZone(name = null) {
       "Type the number of what record delete: ",
       "No option was typed"
     );
+
+    if (isNaN(parseInt(option))) {
+      console.log("Invalid option type again!");
+      rl.close();
+      process.exit(0);
+    }
+
     rl.close();
 
     fileChoose = filteredZones[parseInt(option)];
@@ -102,8 +109,8 @@ async function deleteVirtualHost() {
 
   if (filteredZones.length === 0) {
     console.log("No master zones to delete.");
-    await main();
-    return;
+    rl.close();
+    process.exit(0);
   }
 
   let c = 0;
@@ -117,6 +124,12 @@ async function deleteVirtualHost() {
     "No option was typed"
   );
   rl.close();
+
+  if (isNaN(parseInt(option))) {
+    console.log("Invalid option type again!");
+    rl.close();
+    process.exit(0);
+  }
 
   let selectOption = filteredZones[parseInt(option)];
 
@@ -200,6 +213,12 @@ async function deleteReverseZone() {
   );
   rl.close();
 
+  if (isNaN(parseInt(option))) {
+    console.log("Invalid option type again!");
+    rl.close();
+    process.exit(0);
+  }
+
   let fileChoose = filteredZones[parseInt(option)];
   try {
     fs.unlinkSync("/var/named/" + fileChoose);
@@ -239,7 +258,7 @@ async function main() {
     "Select what you wanna delete:\n[1] Master zone\n[2] Virtual Host\n[3] Reverse zone\nType: ",
     "No option was typed."
   );
-  
+
   switch (deleteWhat) {
     case "1":
       await deleteMasterZone();

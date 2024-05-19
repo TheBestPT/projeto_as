@@ -12,6 +12,7 @@ async function createReverseZone(rl) {
   );
   if (!ipRegex.test(ip)) {
     console.log("Invalid ip type again!");
+    rl.close();
     await main();
     return;
   }
@@ -23,6 +24,7 @@ async function createReverseZone(rl) {
   );
   if (!domainRegex.test(domainName)) {
     console.log("Domain is invalid, program will restart");
+    rl.close();
     await main();
     return;
   }
@@ -150,7 +152,13 @@ async function updateReverseZone(rl) {
     "Type the number of what record delete: ",
     "No option was typed"
   );
-  // rl.close();
+
+  if (isNaN(parseInt(option))) {
+    console.log("Invalid option type again!");
+    rl.close();
+    await main();
+    return;
+  }
 
   let fileChoose = filteredZones[parseInt(option)];
   let reverseFile;
@@ -164,8 +172,9 @@ async function updateReverseZone(rl) {
 
   let records = reverseFile.split("\n").splice(8);
 
-  if(records.length === 0 || !records) {
-    console.log('No records to update')
+  if (records.length === 0 || !records) {
+    console.log("No records to update");
+    rl.close();
     await main();
     return;
   }
@@ -207,6 +216,7 @@ async function updateReverseZone(rl) {
 
   if (!(parseInt(ip) > 0 && parseInt(ip) < 255)) {
     console.log("Invalid ip type again!");
+    rl.close();
     await main();
     return;
   }
@@ -218,6 +228,7 @@ async function updateReverseZone(rl) {
   );
   if (!domainRegex.test(domainName)) {
     console.log("Domain is invalid, program will restart");
+    rl.close();
     await main();
     return;
   }
@@ -283,6 +294,7 @@ async function main() {
       break;
 
     case "3":
+      rl.close();
       console.clear();
       console.log("Delete Reverse zone");
       await deleteReverseZone();

@@ -30,13 +30,13 @@ async function createShare(rl, pathEdit = null) {
     read only = no
     browsable = yes`;
   } else {
-
-    let stringReplace = `[${pathEdit.startsWith("/") ? pathEdit.substring(1) : pathEdit}]
+    let stringReplace = `[${
+      pathEdit.startsWith("/") ? pathEdit.substring(1) : pathEdit
+    }]
     comment = SMB share /${pathEdit}
     path = ${!pathEdit.startsWith("/") ? "/" + pathEdit : pathEdit}
     read only = no
     browsable = yes`;
-
 
     smbConfig = smbConfig.replace(
       stringReplace,
@@ -77,6 +77,13 @@ async function editShare(rl) {
 
   let option = await ask(rl, "Choose one to edit: ", "No option was typed.");
 
+  if (isNaN(parseInt(option))) {
+    console.log("Invalid option type again!");
+    rl.close();
+    await main();
+    return;
+  }
+
   await createShare(
     rl,
     smbConf[parseInt(option)].substring(1, smbConf[parseInt(option)].length - 1)
@@ -99,6 +106,14 @@ async function deleteShare(rl) {
   });
 
   let option = await ask(rl, "Choose one to delete: ", "No option was typed.");
+
+  if(isNaN(parseInt(option))) {
+    console.log("Invalid option type again!");
+    rl.close();
+    await main();
+    return;
+  }
+
   rl.close();
 
   let smbConfig;
@@ -120,6 +135,7 @@ async function deleteShare(rl) {
 
   if (!idx) {
     console.log("Share not found");
+    rl.close();
     await main();
     return;
   }

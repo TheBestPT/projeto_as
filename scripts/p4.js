@@ -37,9 +37,17 @@ async function main() {
   });
   let option = await ask(
     rl,
-    "Type the number of what record to update: ",
+    "Type the number of what record to add: ",
     "No option was typed"
   );
+
+  if(isNaN(parseInt(option))) {
+    console.log("Invalid option type again!");
+    rl.close();
+    await main();
+    return;
+  }
+
   let domainName = filteredZones[parseInt(option)];
   domainName = domainName.replace(".hosts", "");
 
@@ -50,6 +58,7 @@ async function main() {
   // );
   if (!domainRegex.test(domainName)) {
     console.log("Invalid domain name type again!");
+    rl.close();
     await main();
     return;
   }
@@ -62,11 +71,19 @@ async function main() {
 
   if (recordType !== "A" && recordType !== "MX") {
     console.log("Invalid record type, program will restart");
+    rl.close();
     await main();
     return;
   }
 
-  let record = await ask(rl, "Type the record: ", "No record was typed.");
+  let record = await ask(rl, "Type the record (ex: ftp, mail): ", "No record was typed.");
+
+  if (domainRegex.test(record)) {
+    console.log("Invalid record type again!");
+    rl.close();
+    await main();
+    return;
+  }
 
   let ip = await ask(rl, "Type the ip for the record: ", "No ip was typed.");
   rl.close();

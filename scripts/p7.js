@@ -3,27 +3,31 @@ const readline = require("readline");
 const fs = require("fs");
 const { exec } = require("child_process");
 
-
-
 async function createShare(rl, update = null) {
   let path = await ask(
     rl,
     "Insert the path to the directory to be shared: ",
     "No directory was typed"
   );
+
+  try {
+    fs.readdirSync(path);
+  } catch (e) {
+    throw new Error("No valid directory was typed");
+  }
+
   let ip = await ask(
     rl,
     "Insert an ip for the nfs share (ex: 192.168.1.0): ",
     "No ip was typed"
   );
   rl.close();
-  if(!ipRegex.test(ip) || ip[ip.length - 1] !== '0') {
-    throw new Error('Invalid ip was typed.')
-  }
-  try {
-    fs.readdirSync(path);
-  } catch (e) {
-    throw new Error("No valid directory was typed");
+
+  if (!ipRegex.test(ip) || ip[ip.length - 1] !== "0") {
+    console.log("Invalid ip was typed.");
+    rl.close();
+    await main();
+    return;
   }
 
   let nfsExport;
@@ -84,7 +88,7 @@ async function updateShare(rl) {
     throw new Error("Cannot read file: ", PATHS.nfsExport);
   }
   let options = nfsExport.split("\n");
-  options = options.filter((o) => o !== '')
+  options = options.filter((o) => o !== "");
   let optionDisplay = "";
   for (let i = 0; i < options.length; i++) {
     if (options[i] !== "") {
@@ -97,7 +101,14 @@ async function updateShare(rl) {
     "No option was typed"
   );
 
-  await createShare(rl, options[parseInt(updateOption)])
+  if (isNaN(parseInt(updateOption))) {
+    console.log("Invalid option type again!");
+    rl.close();
+    await main();
+    return;
+  }
+
+  await createShare(rl, options[parseInt(updateOption)]);
 }
 
 async function deleteShare(rl) {
@@ -108,7 +119,7 @@ async function deleteShare(rl) {
     throw new Error("Cannot read file: ", PATHS.nfsExport);
   }
   let options = nfsExport.split("\n");
-  options = options.filter((o) => o !== '')
+  options = options.filter((o) => o !== "");
   let optionDisplay = "";
   for (let i = 0; i < options.length; i++) {
     if (options[i] !== "") {
@@ -120,15 +131,28 @@ async function deleteShare(rl) {
     optionDisplay + "Choose witch one you want to delete: ",
     "No option was typed"
   );
-  if (parseInt(deleteOption) < 0 || parseInt(deleteOption) > options.length) {
-    throw new Error("No valid option was typed.");
+
+  if (isNaN(parseInt(deleteOption))) {
+    console.log("Invalid option type again!");
+    rl.close();
+    await main();
+    return;
   }
+
+  if (parseInt(deleteOption) < 0 || parseInt(deleteOption) > options.length) {
+    console.log("No valid option was typed.");
+    rl.close();
+    await main();
+    return;
+  }
+
   let confirm = await ask(
     rl,
-    "Are you sure to disable share?[y/n] ",
+    "Are you sure to delete share?[y/n] ",
     "No option was typed"
   );
   rl.close();
+  
   if (confirm == "y" || confirm == "Y") {
     nfsExport = nfsExport.replace(options[parseInt(deleteOption)], "");
 
@@ -171,7 +195,7 @@ async function main() {
     case "3":
       await deleteShare(rl);
       break;
-      
+
     case "4":
       await disableShare(rl);
       break;
@@ -182,4 +206,4 @@ async function main() {
   }
 }
 
-module.exports = { main }
+module.exports = { main };
