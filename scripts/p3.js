@@ -203,40 +203,7 @@ async function updateVirtualHost(rl) {
     throw new Error("Cannot write file: ", PATHS.httpConf);
   }
 
-  //Update domain in named
-  let namedConf;
-  try {
-    namedConf = fs.readFileSync(PATHS.zones, "utf8");
-  } catch (e) {
-    throw new Error("Couldn't read file: " + PATHS.zones);
-  }
-
-
-
-  namedConf = namedConf.replace(
-    `zone "${selectOption}" IN {
-    type master;
-    file "${PATHS.hosts(selectOption)}";
-  };`,
-    `zone "${changeVirtualHost}" IN {
-    type master;
-    file "${PATHS.hosts(changeVirtualHost)}";
-  };`
-  );
-
-  try {
-    fs.writeFileSync(PATHS.zones, namedConf);
-  } catch (e) {
-    throw new Error("Cannot read file: ", PATHS.zones);
-  }
-
-  exec(
-    `mv /var/named/${selectOption}.hosts /var/named/${changeVirtualHost}.hosts`
-  );
-
-  exec(`systemctl restart named`);
   exec(`systemctl restart httpd`);
-  //END
 
   console.log("Virtual host updated with success");
   console.log(`Http config: ${PATHS.httpConf}`);

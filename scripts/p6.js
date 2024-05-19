@@ -158,39 +158,6 @@ async function deleteVirtualHost() {
     ""
   );
 
-  //Delete domain from named
-
-  try {
-    fs.unlinkSync("/var/named/" + selectOption + ".hosts");
-  } catch (e) {
-    console.log(e);
-    throw new Error("Cannot delete file: ", selectOption);
-  }
-
-  let namedConf;
-  try {
-    namedConf = fs.readFileSync(PATHS.zones, "utf8");
-  } catch (e) {
-    throw new Error("Cannot read file: ", PATHS.zones);
-  }
-  let domainName = selectOption;
-  let searchValue = `zone "${domainName}" IN {
-    type master;
-    file "${PATHS.hosts(domainName)}";
-  };`;
-
-  namedConf = namedConf.replace(searchValue, "");
-
-  try {
-    fs.writeFileSync(PATHS.zones, namedConf);
-  } catch (e) {
-    throw new Error("Cannot write file: " + PATHS.zones);
-  }
-
-  exec(`systemctl restart named`);
-
-  //end
-
   try {
     fs.writeFileSync(PATHS.httpConf, httpConf);
   } catch (e) {
