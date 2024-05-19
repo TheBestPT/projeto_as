@@ -110,13 +110,130 @@ ${lastDigit}  IN  PTR ${domainName}.`;
 
   exec(`systemctl restart named`);
 
-  console.log("reverse zone added with success");
+  console.log("Reverse zone added with success");
   console.log(`Named conf: ${PATHS.zones}`);
   console.log(`Reverse zone: ${PATHS.hosts(`${reverseIp}.in-addr.arpa`)}`);
 }
 
 async function updateReverseZone(rl) {
-  
+  let files;
+  try {
+    files = fs.readdirSync(PATHS.hostsDir);
+  } catch (e) {
+    throw new Error("Cannot read directory: ", PATHS.hostsDir);
+  }
+
+  const pattern = /\.hosts$/;
+  const reversePattern = /\.in-addr\.arpa\.hosts$/;
+  const nonReversePattern = /(?<!\.in-addr\.arpa)\.hosts$/;
+  const filteredZones = files.filter(
+    (file) =>
+      pattern.test(file) &&
+      !nonReversePattern.test(file) &&
+      reversePattern.test(file) &&
+      !file.includes("named") &&
+      file.includes("hosts")
+  );
+
+  let c = 0;
+  if (filteredZones.length === 0) {
+    console.log("No reverse zones to delete.");
+    process.exit(0);
+  }
+
+  filteredZones.forEach((file) => {
+    console.log(`[${c++}] ${file}`);
+  });
+
+  let option = await ask(
+    rl,
+    "Type the number of what record delete: ",
+    "No option was typed"
+  );
+  // rl.close();
+
+  let fileChoose = filteredZones[parseInt(option)];
+  let reverseFile;
+  try {
+    reverseFile = fs.readFileSync("/var/named/" + fileChoose, "utf8");
+  } catch (e) {
+    throw new Error("Cannot read file: ", fileChoose);
+  }
+
+  console.clear();
+
+  let records = reverseFile.split("\n").splice(8);
+
+  let recordString = records.reduce((a, b) => `${a}  \n${b}`);
+
+  console.log(recordString);
+
+  let updateOption = await ask(
+    rl,
+    "Type the number of what record to update: ",
+    "No option was typed"
+  );
+
+  if (records.filter((r) => r.includes(updateOption)).length === 0) {
+    console.log("Wrong record typed in. Type again: ");
+    await updateOption(rl);
+    rl.close();
+    return;
+  }
+
+  let changeEndpoint = await ask(
+    rl,
+    "Do you want to change endpoint number? [y/n] ",
+    "No ip was typed."
+  );
+
+  let ip;
+
+  if (changeEndpoint === "n") {
+    ip = updateOption;
+  } else {
+    ip = await ask(
+      rl,
+      "Insert an endpoint for the reverse zone. (0-254): ",
+      "No ip was typed."
+    );
+  }
+
+  if (!(parseInt(ip) > 0 && parseInt(ip) < 255)) {
+    console.log("Invalid ip type again!");
+    await main();
+    return;
+  }
+
+  let domainName = await ask(
+    rl,
+    "Insert a domain name for the reverse zone: ",
+    "No domain was typed."
+  );
+  if (!domainRegex.test(domainName)) {
+    console.log("Domain is invalid, program will restart");
+    await main();
+    return;
+  }
+
+  rl.close();
+
+  reverseFile = reverseFile.replace(
+    records.filter((r) => r.includes(updateOption))[0],
+    `${ip}  IN  PTR ${domainName}.`
+  );
+
+  try {
+    fs.writeFileSync("/var/named/" + fileChoose, reverseFile);
+  } catch (e) {
+    throw new Error("Cannot read file: ", "/var/named/" + fileChoose);
+  }
+
+  exec(`systemctl restart named`);
+
+  console.log("Reverse zone updated with success.");
+  console.log("Reverse zone config ", PATHS.zones);
+  console.log("Reverse zone file: ", "/var/named/" + fileChoose);
 }
 
 async function disableReverseZone(rl) {
@@ -152,7 +269,13 @@ async function main() {
       console.log("Add Reverse zone");
       await createReverseZone(rl);
       break;
-      
+
+    case "2":
+      console.clear();
+      console.log("Add Reverse zone");
+      await updateReverseZone(rl);
+      break;
+
     case "3":
       console.clear();
       console.log("Delete Reverse zone");
