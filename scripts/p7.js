@@ -101,7 +101,7 @@ async function updateShare(rl) {
     "No option was typed"
   );
 
-  if (isNaN(parseInt(updateOption))  || !filteredZones[parseInt(updateOption)]) {
+  if (isNaN(parseInt(updateOption))  || !options[parseInt(updateOption)]) {
     console.log("Invalid option type again!");
     rl.close();
     await main();
@@ -132,7 +132,7 @@ async function deleteShare(rl) {
     "No option was typed"
   );
 
-  if (isNaN(parseInt(deleteOption)) || !filteredZones[parseInt(deleteOption)]) {
+  if (isNaN(parseInt(deleteOption)) || !options[parseInt(deleteOption)]) {
     console.log("Invalid option type again!");
     rl.close();
     await main();
